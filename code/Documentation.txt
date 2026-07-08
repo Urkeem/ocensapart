@@ -1,0 +1,15 @@
+Ecology rules:
+BIOME_ECOLOGY: Dict[str, BiomeEcology] = {
+    "forest": BiomeEcology("forest", tree_density=0.62, allow_trees=True, tree_rules=(OAK, PINE, BIRCH)),
+    "grassland": BiomeEcology("plains", tree_density=0.48, allow_trees=True, tree_rules=(OAK, BIRCH)),
+    "swamp": BiomeEcology("swamp", tree_density=0.28, allow_trees=True, tree_rules=(MANGROVE, DEAD_TREE)),
+    "coast": BiomeEcology("coast", tree_density=0.4, allow_trees=True, tree_rules=(PALM, DEAD_TREE)),
+    "beach": BiomeEcology("coast", tree_density=0.4, allow_trees=True, tree_rules=(PALM, DEAD_TREE)),
+    "jungle": BiomeEcology("jungle", tree_density=0.50, allow_trees=True, tree_rules=(PALM, MANGROVE, OAK)),
+    "mountain": BiomeEcology("mountain", tree_density=0.14, allow_trees=True, tree_rules=(PINE,)),
+    "highlands": BiomeEcology("mountain", tree_density=0.30, allow_trees=True, tree_rules=(PINE,)),
+    "desert": BiomeEcology("desert", tree_density=0.01, allow_trees=True, tree_rules=(DEAD_TREE, PALM)),
+    "dryland": BiomeEcology("desert", tree_density=0.56, allow_trees=True, tree_rules=(DEAD_TREE, PALM)),
+    "deep_ocean": BiomeEcology("deep_ocean", tree_density=0.0, allow_trees=False, tree_rules=()),
+    "shallow_ocean": BiomeEcology("shallow_ocean", tree_density=0.0, allow_trees=False, tree_rules=()),
+}
