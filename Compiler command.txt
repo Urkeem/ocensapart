@@ -1,0 +1,4 @@
+pyinstaller --onefile --windowed --name "Oceans Apart" --add-data "graphics;graphics" --add-data "Map;Map" --add-data "data;data" --add-binary "ngrok.exe;." --hidden-import pytmx --hidden-import pytmx --hidden-import pyscroll code\host_launcher.py
+
+// Compile C into dll and pass to python
+gcc -shared -o output.dll file.c

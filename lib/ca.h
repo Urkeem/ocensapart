@@ -1,0 +1,1 @@
+__declspec(dllexport) void step_ca(int *grid, int size);

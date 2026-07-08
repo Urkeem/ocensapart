@@ -1,0 +1,51 @@
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.env/
+.venv/
+
+# Environment / secret files
+.env
+*.env
+
+# IDE/editor files
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# PyGame / Python build files
+build/
+dist/
+*.spec
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+
+# Save files / local testing data
+saves/
+save_data/
+local_data/
+
+# Large raw assets you do not want to upload
+# Uncomment these only if needed:
+# raw_assets/
+# test_assets/
+
+# Build/export files
+*.exe
+*.pkg
+*.msi
+*.zip
+

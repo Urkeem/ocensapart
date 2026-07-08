@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="d4cb9510-e6c6-4307-8b01-fae2e733ea17" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code" beforeDir="false" afterPath="$PROJECT_DIR$/code" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/123trees.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/TileMapManager.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/TileMapManager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/assets.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/assets.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/camera.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/core/camera.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/cellular_automata.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/world/cellular_automata.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/chunkmanager.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/world/chunkmanager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/ecology.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/world/ecology.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/environment_prop.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/entities/environment_prop.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/house.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/entities/house.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/hud.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/ui/hud.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/inventory.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/ui/inventory.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/inventory_item.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/inventory_item.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/npc.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/entities/npc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/pathfinding.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/pathfinding.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/player.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/entities/player.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/core/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/soil.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/world/soil.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/sprites.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/sprites.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/support.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/core/support.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/swimming.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/swimming.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/tree.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/entities/tree.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/weather.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/world/weather.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/worldmanager.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/world/worldmanager.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="10782" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="2spEgRQnmi1KGB2Cr3fDnBHjpt1" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.TileMapManager.executor": "Run",
+    "Python.cellular_automata.executor": "Run",
+    "Python.chunkmanager.executor": "Run",
+    "Python.ecology.executor": "Run",
+    "Python.environment_prop.executor": "Run",
+    "Python.game_ui.executor": "Run",
+    "Python.house.executor": "Run",
+    "Python.inventory.executor": "Run",
+    "Python.level.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.map.executor": "Run",
+    "Python.mine.executor": "Run",
+    "Python.player.executor": "Run",
+    "Python.player2.executor": "Run",
+    "Python.server.executor": "Run",
+    "Python.settings.executor": "Run",
+    "Python.test.executor": "Run",
+    "Python.test2.executor": "Run",
+    "Python.tilemap.executor": "Run",
+    "Python.tree.executor": "Run",
+    "Python.worldmanager.executor": "Run",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/akeem/Desktop/PirateBay/graphics/sprites/character/hair",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\character\hair" />
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\character\clothes" />
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\character" />
+      <recent name="C:\Users\akeem\Desktop\Pirate Bay\graphics\icons" />
+      <recent name="C:\Users\akeem\Desktop\Pirate Bay\Tilesets" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\environment\props\general" />
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\houses\tertiary" />
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\houses\secondary" />
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\houses\primary" />
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\environment\props\pots" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="Pirate Bay" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="true" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/code/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-b63d5a1f7c97-b61e75351b1f-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-261.22158.340" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="d4cb9510-e6c6-4307-8b01-fae2e733ea17" name="Changes" comment="" />
+      <created>1739144226424</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1739144226424</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/temp/player.py</url>
+          <option name="timeStamp" value="10" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/temp/level.py</url>
+          <option name="timeStamp" value="23" />
+        </line-breakpoint>
+      </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
