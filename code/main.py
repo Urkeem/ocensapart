@@ -1,4 +1,5 @@
 """Game entry point and runtime glue for world rendering, entities, and UI."""
+"I have to move some functions and classes to utils and new class files."
 
 import math
 import random
