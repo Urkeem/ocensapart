@@ -76,11 +76,12 @@ def get_shared_assets():
     # loaded sprite sheets without re-reading image files.
     global _SHARED_ASSETS
     if _SHARED_ASSETS is None:
-        _SHARED_ASSETS = LoadAssets()
+        _SHARED_ASSETS = LoadAssets() # Load assets for the LoadAssets() class in assets.py.
     return _SHARED_ASSETS
 
 
 def get_water_frames():
+    # Get water sprites and load them
     global _WATER_FRAME_CACHE
     if _WATER_FRAME_CACHE is not None:
         return _WATER_FRAME_CACHE
@@ -97,6 +98,7 @@ def get_water_frames():
 
 
 def get_scaled_shallow_water_sprite(chunk):
+    #Returns a water sprite for a each 
     water_sprite = chunk.runtime.get("water_sprite")
     if water_sprite is not None:
         return water_sprite
@@ -109,6 +111,7 @@ def get_scaled_shallow_water_sprite(chunk):
 
 class WaterTile(AnimatedWorldObject):
     def __init__(self, world_pos, tile_size, frames, animation_speed=WATER_ANIMATION_SPEED):
+        # This class governs water.
         scaled_frames = [pygame.transform.scale(frame, (tile_size, tile_size)) for frame in frames]
         super().__init__(
             pos=world_pos,
@@ -143,6 +146,7 @@ def get_chunk_tilemap(world, chunk):
 def is_deep_water_tile(chunk, local_x, local_y):
     # Deep ocean is low-elevation water that is not touching land; shoreline
     # water is left to the shallow animated layer.
+    # return 1 if the tile is away from the shore
     idx = chunk.get_index(local_x, local_y)
     if chunk.layers["terrain"][idx] != -1:
         return 0
@@ -151,11 +155,12 @@ def is_deep_water_tile(chunk, local_x, local_y):
         return 0
 
     chunk_w, chunk_h = chunk.chunk_size
+    # Look at each tile and its neighbors.
     for dy in (-1, 0, 1):
         for dx in (-1, 0, 1):
             if dx == 0 and dy == 0:
                 continue
-
+               # grab the next tile
             nx = local_x + dx
             ny = local_y + dy
             if 0 <= nx < chunk_w and 0 <= ny < chunk_h:
@@ -163,10 +168,11 @@ def is_deep_water_tile(chunk, local_x, local_y):
                 if chunk.layers["terrain"][nidx] != -1:
                     return 0
 
-    return 1
+    return 1 
 
 
 def build_deep_water_mask(chunk):
+    # Return tiles that are part of the deep water.
     chunk_w, chunk_h = chunk.chunk_size
     return [
         is_deep_water_tile(chunk, local_x, local_y)
@@ -180,6 +186,7 @@ def get_neighbor_deep_water_mask_value(neighbor_chunk, local_x, local_y):
 
 
 def get_deep_ocean_tilemap(world, chunk):
+    # Return the deep water tilemap
     tilemap = chunk.runtime.get("deep_ocean_tilemap")
     if tilemap is None:
         tilemap = TileMap(
@@ -196,6 +203,7 @@ def get_deep_ocean_tilemap(world, chunk):
 
 
 def get_scaled_deep_ocean_sprite(world, chunk, idx):
+    # Scale the deep water tilemap sprites
     sprite_cache = chunk.runtime.get("deep_ocean_sprite_cache")
     if sprite_cache is None:
         sprite_cache = {}
@@ -214,8 +222,9 @@ def get_scaled_deep_ocean_sprite(world, chunk, idx):
 
 
 def get_deep_ocean_surface(world, chunk):
+    # Create a deep ocean surface and blit the spirtes on it.
     deep_ocean_surface = chunk.runtime.get("deep_ocean_surface")
-    if deep_ocean_surface is not None and not chunk.dirty:
+    if deep_ocean_surface is not None and not chunk.dirty: 
         return deep_ocean_surface
 
     chunk_w, chunk_h = chunk.chunk_size
@@ -234,6 +243,7 @@ def get_deep_ocean_surface(world, chunk):
 
 
 def get_scaled_land_sprite(chunk, tilemap, idx):
+    # This is similar to the deep ocean one...
     sprite_cache = chunk.runtime.get("scaled_land_sprites")
     if sprite_cache is None:
         sprite_cache = {}
@@ -372,6 +382,7 @@ def get_chunk_surface(world, chunk):
 
 
 def ensure_chunk_water_objects(chunk):
+    # Keeps track of water objects
     runtime_water_objects = chunk.runtime.get("water_objects")
     if runtime_water_objects is None:
         runtime_water_objects = {}
@@ -405,6 +416,7 @@ def ensure_chunk_water_objects(chunk):
 
 
 def ensure_chunk_tree_objects(chunk):
+    # Keeps track of trees in chunks
     runtime_tree_objects = chunk.runtime.get("tree_objects")
     if runtime_tree_objects is None:
         runtime_tree_objects = {}
@@ -432,6 +444,7 @@ def ensure_chunk_tree_objects(chunk):
 
 
 def ensure_chunk_house_objects(chunk):
+    # Keeps track of houses in a chunk
     runtime_house_objects = chunk.runtime.get("house_objects")
     if runtime_house_objects is None:
         runtime_house_objects = {}
@@ -453,6 +466,7 @@ def ensure_chunk_house_objects(chunk):
 
 
 def ensure_chunk_environment_objects(chunk):
+    # Keeps track of environment objects in a chunk
     runtime_environment_objects = chunk.runtime.get("environment_objects")
     if runtime_environment_objects is None:
         runtime_environment_objects = {}
@@ -501,6 +515,7 @@ def ensure_chunk_environment_objects(chunk):
 
 
 def collect_chunk_objects(chunk, soil_layer=None):
+    # Collects all objets in a chunk
     objects = []
     objects.extend(ensure_chunk_water_objects(chunk))
     objects.extend(ensure_chunk_tree_objects(chunk))
@@ -527,6 +542,7 @@ def prewarm_chunk_runtime(chunk, world=None):
 
 
 def update_world_objects(visible_chunks, player, dt, soil_layer=None):
+    # Update object in every chunk.
     near_chunks = {coord for coord, _, _, _ in visible_chunks}
     updated_ids = set()
     for _, chunk, _, _ in visible_chunks:
@@ -570,6 +586,7 @@ def collect_y_sorted_objects(visible_chunks, player, soil_layer=None, npc_manage
 
 
 def collect_player_collision_objects(world):
+    # Return objects that the player collides with.
     objects = []
     player_chunk = world.current_player_chunk or world.spawn_chunk
     for chunk_coord in world.get_chunks_near(player_chunk, radius=1):
@@ -587,6 +604,7 @@ def collect_player_collision_objects(world):
 
 
 def collect_rock_collision_objects(world):
+    # Return rocks that the player collides with.
     rocks = []
     player_chunk = world.current_player_chunk or world.spawn_chunk
     for chunk_coord in world.get_chunks_near(player_chunk, radius=1):
@@ -600,6 +618,7 @@ def collect_rock_collision_objects(world):
 
 
 def collect_pickups_near_player(world, player):
+    # Return true if the player is next to a collectable
     pickup_area = player.collision_box.inflate(world.tile_size, world.tile_size)
     player_chunk = world.current_player_chunk or world.world_to_chunk(player.center)
     for chunk_coord in world.get_chunks_near(player_chunk, radius=1):
@@ -616,6 +635,7 @@ def collect_pickups_near_player(world, player):
 
 
 def spawn_rock_piece_drops(chunk, rock, amount):
+    # Break rocks before picking them up.
     if amount <= 0:
         return
 
@@ -686,6 +706,7 @@ def get_player_fishing_water_rect(world, player):
 
 
 def get_contextual_world_hint(world, player):
+    # Look at resources next tot the player.
     seen = getattr(player, "world_hint_seen", set())
     if not isinstance(seen, set):
         seen = set()
@@ -737,6 +758,7 @@ def get_contextual_world_hint(world, player):
 
 
 def draw_player_world_hint(screen, world, player, camera, dt):
+    # Draw the visual queues
     hint = get_contextual_world_hint(world, player)
     if hint is None:
         return
@@ -779,6 +801,7 @@ def draw_player_world_hint(screen, world, player, camera, dt):
 
 
 def draw_fishing_overlay(screen, player, camera):
+    # Draw fisihing overlay
     if not getattr(player, "fishing_active", False) or player.fishing_bobber_pos is None:
         return
 
@@ -802,6 +825,7 @@ def draw_fishing_overlay(screen, player, camera):
 
 
 def draw_world(screen, world, player, camera, dt, soil_layer=None, npc_manager=None):
+    # Draw the world
     screen.fill(BACKGROUND_COLOR)
     cam_x = int(camera.offset.x)
     cam_y = int(camera.offset.y)
@@ -1251,6 +1275,7 @@ class StartupFlow:
             self.screen.blit(value_label, value_label.get_rect(midright=(row.right - 14, row.centery)))
 
     def draw_loading_screen(self):
+        # draw the loading screen
         panel = self.draw_center_panel(
             self.loading_label or "Preparing",
             self.loading_note or "Please wait...",

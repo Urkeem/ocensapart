@@ -88,11 +88,12 @@ class SeasonCycle:
 
 
 class WeatherParticle:
-    def __init__(self, image, pos, velocity, lifetime):
+    def __init__(self, image, pos, velocity, lifetime, particle_type=None):
         self.image = image
         self.pos = pygame.Vector2(pos)
         self.velocity = pygame.Vector2(velocity)
         self.lifetime = lifetime
+        self.particle_type = particle_type
         self.age = 0.0
         self.rect = self.image.get_rect(topleft=pos)
 
@@ -107,6 +108,10 @@ class WeatherParticle:
 
 
 class WeatherSystem:
+    CLOUD_SCALE = 2
+    CLOUD_MIN_VERTICAL_SPACING = 90
+    CLOUD_SPAWN_INTERVAL = (0.8, 1.8)
+
     def __init__(self, screen_size):
         self.screen_w, self.screen_h = screen_size
         self.time = GameTime()
@@ -114,9 +119,11 @@ class WeatherSystem:
         self.particles = []
         self.rain_drops = import_folder("graphics", "rain", "drops")
         self.rain_floor = import_folder("graphics", "rain", "floor")
+        self.cloud_surfs = import_folder("graphics", "environment", "Clouds")
         self.font = pygame.font.Font(rp("font", "LycheeSoda.ttf"), 22)
         self.small_font = pygame.font.Font(rp("font", "LycheeSoda.ttf"), 18)
         self._soil_water_timer = 0.0
+        self._cloud_spawn_timer = 0.0
 
     @property
     def weather(self):
@@ -212,18 +219,53 @@ class WeatherSystem:
             )
 
     def spawn_clouds(self, dt):
-        if self.rain_floor and self.should_spawn(8, dt):
-            image = random.choice(self.rain_floor).copy()
-            image.set_alpha(90)
-            speed_x = random.randint(-80, -35)
-            self.particles.append(
-                WeatherParticle(
-                    image,
-                    (self.screen_w + 30, random.randint(0, int(self.screen_h * 0.55))),
-                    (speed_x, 0),
-                    (self.screen_w + image.get_width() + 120) / abs(speed_x),
-                )
+        cloud_images = self.cloud_surfs or self.rain_floor
+        if not cloud_images:
+            return
+
+        self._cloud_spawn_timer -= dt
+        if self._cloud_spawn_timer > 0:
+            return
+
+        image = random.choice(cloud_images).copy()
+        image = pygame.transform.scale(
+            image,
+            (image.get_width() * self.CLOUD_SCALE, image.get_height() * self.CLOUD_SCALE),
+        )
+        image.set_alpha(90)
+        y = self.pick_cloud_y(image.get_height())
+        if y is None:
+            self._cloud_spawn_timer = 0.35
+            return
+
+        speed_x = random.randint(-80, -35)
+        self.particles.append(
+            WeatherParticle(
+                image,
+                (self.screen_w + 30, y),
+                (speed_x, 0),
+                (self.screen_w + image.get_width() + 120) / abs(speed_x),
+                "cloud",
             )
+        )
+        self._cloud_spawn_timer = random.uniform(*self.CLOUD_SPAWN_INTERVAL)
+
+    def pick_cloud_y(self, cloud_height):
+        max_y = max(0, self.screen_h - cloud_height)
+        cloud_particles = [
+            particle for particle in self.particles
+            if particle.particle_type == "cloud"
+        ]
+        for _ in range(12):
+            y = random.randint(0, max_y)
+            center_y = y + cloud_height / 2
+            has_space = all(
+                abs(center_y - particle.rect.centery) >= self.CLOUD_MIN_VERTICAL_SPACING
+                for particle in cloud_particles
+            )
+            if has_space:
+                return y
+        return None
 
     def draw(self, screen):
         for particle in self.particles:
