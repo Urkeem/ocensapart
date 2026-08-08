@@ -14,6 +14,10 @@ from utils import rp
 
 _ENV_IMAGE_CACHE: dict[tuple[str, float], pygame.Surface] = {}
 
+ASSET_PATH_ALIASES = {
+    "props/general/buckets.png": "props/buckets/buckets.png#0",
+}
+
 PROP_SHEET_FRAMES = {
     "props/flowers/flowerthin.png": (22, 40, "vertical"),
     "props/flowers/flowermeduim.png": (22, 30, "vertical"),
@@ -21,6 +25,7 @@ PROP_SHEET_FRAMES = {
     "props/flowers/flowersmall.png": (20, 23, "vertical"),
     "props/pots/potsmeduim.png": (30, 32, "horizontal"),
     "props/pots/potsthin.png": (25, 27, "horizontal"),
+    "props/buckets/buckets.png": (32, 32, "horizontal"),
 }
 
 # Collision profiles to manipulate individual prop collision boxes.
@@ -98,6 +103,7 @@ def list_environment_assets(*parts):
 
 
 def get_environment_image(asset_path: str, scale: float = 2):
+    asset_path = ASSET_PATH_ALIASES.get(asset_path, asset_path)
     key = (asset_path, float(scale))
     cached = _ENV_IMAGE_CACHE.get(key)
     if cached is not None:

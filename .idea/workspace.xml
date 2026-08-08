@@ -4,14 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d4cb9510-e6c6-4307-8b01-fae2e733ea17" name="Changes" comment="" />
+    <list default="true" id="d4cb9510-e6c6-4307-8b01-fae2e733ea17" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/entities/environment_prop.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/entities/environment_prop.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/world/chunkmanager.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/world/chunkmanager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/world/soil.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/world/soil.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/props/general/buckets.png" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="1004" />
+    <option name="cachedIndexableFilesCount" value="1003" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -85,11 +92,11 @@
       <recent name="C:\Users\akeem\Desktop\Pirate Bay\graphics\icons" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\environment\props\buckets" />
       <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\environment\props\general" />
       <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\houses\tertiary" />
       <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\houses\secondary" />
       <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\houses\primary" />
-      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\environment\props\pots" />
     </key>
   </component>
   <component name="RunManager">
@@ -102,8 +109,9 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.12" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="DEBUG_JUST_MY_CODE" value="true" />

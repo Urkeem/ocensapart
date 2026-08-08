@@ -5,6 +5,7 @@ import pygame
 from TileMapManager import TileMap
 from sprites import WorldObject
 from core.support import import_file, import_folder
+from core.settings import GROW_SPEED
 
 
 SOIL_TILESET_FILE = "Tilesets/land.png"
@@ -40,7 +41,7 @@ class Plant(WorldObject):
         if not watered or self.harvestable:
             return
 
-        self.age = min(self.max_age, self.age + PLANT_GROW_SPEED.get(self.plant_type, 0.2) * dt)
+        self.age = min(self.max_age, self.age + GROW_SPEED.get(self.plant_type, 0.2) * dt)
         if self.age >= self.max_age:
             self.harvestable = True
 

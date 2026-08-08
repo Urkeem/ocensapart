@@ -14,9 +14,9 @@ from entities.house import House
 from entities.environment_prop import EnvironmentProp, list_environment_assets
 from world.soil import SoilLayer, get_soil_surface, ensure_chunk_plant_objects
 from ui.hud import GameplayHUD
-from sprites import AnimatedWorldObject
 from world.weather import WeatherSystem
 from entities.npc import NPCManager
+from world.water import WaterTile
 from utils import rp
 
 pygame.init()
@@ -33,7 +33,6 @@ BACKGROUND_COLOR = (20, 20, 30)
 PLAYER_COLOR = (230, 70, 70)
 TEXT_COLOR = (255, 255, 255)
 TILESET_SOURCE_TILE_SIZE = 32
-WATER_ANIMATION_SPEED = 4.0
 WORLD_SCALE = 2
 
 UI_BG = (11, 16, 26)
@@ -108,24 +107,6 @@ def get_scaled_shallow_water_sprite(chunk):
     water_sprite = pygame.transform.scale(frames[0], (chunk.tile_size, chunk.tile_size))
     chunk.runtime["water_sprite"] = water_sprite
     return water_sprite
-
-
-class WaterTile(AnimatedWorldObject):
-    def __init__(self, world_pos, tile_size, frames, animation_speed=WATER_ANIMATION_SPEED):
-        # This class governs water.
-        scaled_frames = [pygame.transform.scale(frame, (tile_size, tile_size)) for frame in frames]
-        super().__init__(
-            pos=world_pos,
-            frames=scaled_frames,
-            anchor="topleft",
-            animation_speed=animation_speed,
-            loop=True,
-        )
-        self.render_layer = "ground"
-
-    @property
-    def sort_y(self):
-        return self.rect.bottom
 
 
 def get_chunk_tilemap(world, chunk):
@@ -467,7 +448,7 @@ def ensure_chunk_house_objects(chunk):
 
 
 def ensure_chunk_environment_objects(chunk):
-    # Keeps track of environment objects in a chunk
+    # Keeps track of environment objects/Props in a chunk
     runtime_environment_objects = chunk.runtime.get("environment_objects")
     if runtime_environment_objects is None:
         runtime_environment_objects = {}
