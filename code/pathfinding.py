@@ -18,9 +18,11 @@ class ChunkPathfinder:
         return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
     def world_to_tile(self, world_pos):
+        # Actors are anchored by midbottom. A foot position exactly on a tile
+        # boundary belongs to the tile immediately above that boundary.
         return (
             int(world_pos[0] // self.world.tile_size),
-            int(world_pos[1] // self.world.tile_size),
+            int((world_pos[1] - 1e-6) // self.world.tile_size),
         )
 
     def tile_to_world_center(self, tile):
@@ -50,12 +52,17 @@ class ChunkPathfinder:
             return False
 
         idx = chunk.get_index(local_x, local_y)
-        return chunk.layers["terrain"][idx] == -1 or chunk.layers["collision"][idx] == 0
+        dock_layer = chunk.layers.get("dock")
+        on_dock = dock_layer is not None and dock_layer[idx] is not None
+        return (
+            (chunk.layers["terrain"][idx] != -1 or on_dock)
+            and chunk.layers["collision"][idx] == 0
+        )
 
     def neighbors(self, tile):
         x, y = tile
         for neighbor in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
-            if self.is_loaded_tile(neighbor) and self.is_walkable(neighbor):
+            if self.is_walkable(neighbor):
                 yield neighbor
 
     def find_full_path(self, start, goal, max_nodes=1800):

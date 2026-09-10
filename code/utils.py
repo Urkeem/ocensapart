@@ -1,5 +1,6 @@
 """Small cross-module helpers for asset path resolution and UI drawing."""
 
+from functools import lru_cache
 from pathlib import Path
 import sys
 from pygame import Rect
@@ -41,6 +42,7 @@ def _asset_candidates(path: Path) -> list[Path]:
     return candidates
 
 
+@lru_cache(maxsize=4096)
 def rp(*parts) -> str:
     """Build a path that works in dev, after asset reorganization, and in the EXE."""
     path = _as_path(*parts)

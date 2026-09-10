@@ -1,12 +1,14 @@
 """Inventory data structures and Pygame UI widgets for item management."""
 
 import pygame
+from pathlib import Path
 from inventory_item import *
 from assets import LoadAssets
 from utils import rp
 
 
 _ICON_CACHE = {}
+MAX_STACK_SIZE = 50
 
 
 def normalize_item_name(name):
@@ -17,28 +19,48 @@ def load_item_icon(name, size=(32, 32)):
     if not name:
         return ""
 
-    key = (normalize_item_name(name), size)
+    normalized_name = normalize_item_name(name)
+    icon_name = "weed" if normalized_name == "bush" else normalized_name
+    key = (icon_name, size)
     cached = _ICON_CACHE.get(key)
     if cached is not None:
         return cached
 
     candidates = [
-        f"{normalize_item_name(name)}.png",
+        f"{icon_name}.png",
         f"{name}.png",
         f"{name.title().replace(' ', '_')}.png",
         f"{name.title().replace(' ', '')}.png",
     ]
+    if normalized_name == "water":
+        candidates.insert(0, "watering_can.png")
     if "apple" in name.lower():
         candidates.append("apple.png")
 
+    icon_folders = (
+        ("graphics", "sprites", "icons"),
+        ("graphics", "icons"),
+    )
     for filename in candidates:
-        try:
-            image = pygame.image.load(rp("graphics", "icons", filename)).convert_alpha()
-            image = pygame.transform.scale(image, size)
-            _ICON_CACHE[key] = image
-            return image
-        except (FileNotFoundError, pygame.error):
-            continue
+        for folder in icon_folders:
+            try:
+                image = pygame.image.load(rp(*folder, filename)).convert_alpha()
+                image = pygame.transform.scale(image, size)
+                _ICON_CACHE[key] = image
+                return image
+            except (FileNotFoundError, pygame.error):
+                continue
+
+    try:
+        crop_sheet = pygame.image.load(
+            rp("graphics", "environment", "crops", f"{icon_name}.png")
+        ).convert_alpha()
+        frame = crop_sheet.subsurface((16, 16, 16, 16)).copy()
+        image = pygame.transform.scale(frame, size)
+        _ICON_CACHE[key] = image
+        return image
+    except (FileNotFoundError, ValueError, pygame.error):
+        pass
 
     _ICON_CACHE[key] = ""
     return ""
@@ -52,27 +74,44 @@ class Inventory:
         self.is_inv = False
         self.craft_system = Craft_System()
         self.crafted_counts = {}
+        self.selected_item_name = None
         pass
 
-    def add_item_to_slot(self, item: Item):
+    def add_item_to_slot(self, item: Item, amount=1):
         """
         This is function create an empty slots array to keep track of the empty slots.
         Check if an item can be stacked > if true add it to the same slot else add it to an empty one.
         :param item:
         :return:
         """
-        # empty slots.
-        self.empty_slots = [slot for slot in self.slots if slot.item.name == ""]
+        amount = max(0, int(amount))
+        if amount == 0:
+            return True
+        stackable_slots = [
+            slot
+            for slot in self.slots
+            if slot.item.name == item.name and slot.amount < MAX_STACK_SIZE
+        ]
+        empty_slots = [slot for slot in self.slots if slot.item.name == ""]
+        capacity = sum(MAX_STACK_SIZE - slot.amount for slot in stackable_slots)
+        capacity += len(empty_slots) * MAX_STACK_SIZE
+        if capacity < amount:
+            return False
 
-        # stackable slots
-        self.stackable_slots = [slot for slot in self.slots if slot.item.name == item.name]
-
-        if self.stackable_slots:
-            self.stackable_slots[0].add_item(item)
-
-        else:
-            # if a slot is empty, add an item to it.
-            self.empty_slots[0].add_item(item)
+        remaining = amount
+        for slot in stackable_slots:
+            added = min(remaining, MAX_STACK_SIZE - slot.amount)
+            slot.add_item(item, added)
+            remaining -= added
+            if remaining == 0:
+                return True
+        for slot in empty_slots:
+            added = min(remaining, MAX_STACK_SIZE)
+            slot.add_item(item, added)
+            remaining -= added
+            if remaining == 0:
+                return True
+        return True
 
     def count_item(self, item_name):
         return sum(slot.amount for slot in self.slots if slot.item.name == item_name)
@@ -84,6 +123,8 @@ class Inventory:
         return None
 
     def remove_item_count(self, item_name, amount=1):
+        if self.count_item(item_name) < amount:
+            return False
         remaining = amount
         for slot in self.slots:
             if slot.item.name != item_name or slot.amount <= 0:
@@ -94,8 +135,28 @@ class Inventory:
             if slot.amount <= 0:
                 slot.remove_item(slot.item)
             if remaining <= 0:
+                if self.count_item(item_name) <= 0 and self.selected_item_name == item_name:
+                    self.selected_item_name = None
                 return True
         return False
+
+    def select_placeable(self, item_name):
+        slot = self.find_slot(item_name)
+        if slot is None or not slot.item.place:
+            return False
+        self.selected_item_name = (
+            None if self.selected_item_name == slot.item.name else slot.item.name
+        )
+        return True
+
+    def get_selected_placeable(self):
+        if not self.selected_item_name:
+            return None
+        slot = self.find_slot(self.selected_item_name)
+        if slot is None or not slot.item.place:
+            self.selected_item_name = None
+            return None
+        return slot.item
 
     def add_crafted_item(self, item_name, amount=1):
         self.crafted_counts[item_name] = self.crafted_counts.get(item_name, 0) + amount
@@ -123,37 +184,40 @@ class Slot:
         self.position = ()
         self.slot_width = 66
         self.occupied_image = self.assets.all_sprite_sheet.get_sprite(*self.assets.sprite_data["slot"])
-        self.occupied_image = pygame.transform.scale(self.occupied_image, (self.occupied_image.get_width()*2.5, self.occupied_image.get_height()*2.5))
+        self.occupied_image = pygame.transform.scale(self.occupied_image, (64, 64))
         self.empty_image = self.assets.all_sprite_sheet.get_sprite(*self.assets.sprite_data["slot"])
-        self.empty_image = pygame.transform.scale(self.empty_image, (self.empty_image.get_width()*2.5, self.empty_image.get_height()*2.5))
-        self.hover_image = pygame.image.load(rp("graphics/inventory", "slotselect.png")).convert_alpha()
+        self.empty_image = pygame.transform.scale(self.empty_image, (64, 64))
+        self.hover_image = pygame.image.load(
+            rp("graphics", "game_ui", "selector", "s32.png")
+        ).convert_alpha()
+        self.hover_image = pygame.transform.scale(self.hover_image, (64, 64))
         self.item = Item("", "")  # each slot has item instance in it.
         self.rect = pygame.Rect(0 , 0, self.occupied_image.get_width(), self.occupied_image.get_height())
 
-    def add_item(self, item):
+    def add_item(self, item, amount=1):
         """
         This function is called when there is need to add an item to the inventory.
         Here, check the slot if is empty that is the item name and image are empty string:
         if true: assign the item image and name to the item.
 
         """
-        self.item.name = item.name
-        self.item.image = load_item_icon(item.name) or item.image
-        self.amount += 1
+        if self.amount <= 0 or not self.item.name:
+            self.item = item.copy()
+            self.item.image = load_item_icon(item.name) or item.image
+        self.amount = min(MAX_STACK_SIZE, self.amount + max(0, int(amount)))
         # print(f"{item.name} was added to the inventory")
         pass
 
     def place_item_to_slot(self, item: Item, amount: int):
-        self.item.name = item.name
+        self.item = item.copy()
         self.item.image = load_item_icon(item.name) or item.image
-        self.amount = amount
+        self.amount = min(MAX_STACK_SIZE, max(0, int(amount)))
 
         pass
 
     def remove_item(self, item: Item):
         if self.item.name == item.name:  # Check the item being removed.
-            self.item.name = ""
-            self.item.image = ""
+            self.item = Item("", "")
             self.amount = 0
         pass
 
@@ -198,6 +262,7 @@ class Inventory_UI:
         self.page_buttons = {}
         self.craft_button = None
         self.resource_allocations = {}
+        self.controller_focus_index = 0
 
     def display_inventory(self):
         """
@@ -212,6 +277,79 @@ class Inventory_UI:
         )
         self.display_craft_panel()
         self.display_category_panel()
+        self.draw_controller_focus()
+
+    def get_controller_targets(self):
+        targets = [slot.rect for slot in self.slot_ui.slots if slot.rect.width > 0]
+        targets.extend(rect for rect, _ in self.craft_item_buttons)
+        targets.extend(rect for rect, _, _ in self.resource_buttons)
+        targets.extend(self.category_buttons.values())
+        targets.extend(self.page_buttons.values())
+        if self.craft_button is not None:
+            targets.append(self.craft_button)
+        return targets
+
+    def draw_controller_focus(self):
+        targets = self.get_controller_targets()
+        if not targets:
+            return
+        self.controller_focus_index %= len(targets)
+        pygame.draw.rect(
+            self.screen,
+            self.gold,
+            targets[self.controller_focus_index].inflate(5, 5),
+            3,
+            border_radius=8,
+        )
+
+    def handle_controller_button(self, button):
+        from gameplay.controls import (
+            BUTTON_CONFIRM,
+            BUTTON_DPAD_DOWN,
+            BUTTON_DPAD_LEFT,
+            BUTTON_DPAD_RIGHT,
+            BUTTON_DPAD_UP,
+        )
+
+        targets = self.get_controller_targets()
+        if not targets:
+            return False
+        self.controller_focus_index %= len(targets)
+
+        if button == BUTTON_CONFIRM:
+            self.handle_click((1, targets[self.controller_focus_index].center))
+            return True
+
+        directions = {
+            BUTTON_DPAD_LEFT: pygame.Vector2(-1, 0),
+            BUTTON_DPAD_RIGHT: pygame.Vector2(1, 0),
+            BUTTON_DPAD_UP: pygame.Vector2(0, -1),
+            BUTTON_DPAD_DOWN: pygame.Vector2(0, 1),
+        }
+        direction = directions.get(button)
+        if direction is None:
+            return False
+
+        origin = pygame.Vector2(targets[self.controller_focus_index].center)
+        best_index = None
+        best_score = None
+        for index, target in enumerate(targets):
+            if index == self.controller_focus_index:
+                continue
+            offset = pygame.Vector2(target.center) - origin
+            forward = offset.dot(direction)
+            if forward <= 0:
+                continue
+            sideways = abs(offset.cross(direction))
+            score = forward + sideways * 1.8
+            if best_score is None or score < best_score:
+                best_score = score
+                best_index = index
+
+        if best_index is not None:
+            self.controller_focus_index = best_index
+            return True
+        return False
 
     def draw_panel(self, rect, title):
         pygame.draw.rect(self.screen, self.panel_color, rect, border_radius=10)
@@ -230,17 +368,17 @@ class Inventory_UI:
     def draw_slot_surface(self, rect, item_name="", count_text="", selected=False):
         slot_image = self.inventory.slots[0].occupied_image if selected or item_name else self.inventory.slots[0].empty_image
         # slot_image = pygame.transform.scale(slot_image, rect.size)
-        self.screen.blit(slot_image, slot_image.get_rect(center=(rect.centerx-28, rect.centery)))
+        self.screen.blit(slot_image, slot_image.get_rect(center=rect.center))
         #if selected:
             # pygame.draw.rect(self.screen, self.gold, rect, 2, border_radius=6)
 
         image = self.get_inventory_image(item_name)
         if image:
-            self.screen.blit(image, image.get_rect(center=(rect.centerx-24, rect.centery)))
+            self.screen.blit(image, image.get_rect(center=rect.center))
 
         if count_text:
             text = self.small_font.render(str(count_text), True, self.text_color)
-            self.screen.blit(text, text.get_rect(bottomright=(rect.right - 24, rect.bottom - 3)))
+            self.screen.blit(text, text.get_rect(bottomright=(rect.right - 4, rect.bottom - 3)))
 
     def get_inventory_image(self, item_name):
         for slot in self.inventory.slots:
@@ -265,12 +403,6 @@ class Inventory_UI:
             self.player.seed_inventory[resource] -= 1
             return True
 
-        if self.player is not None and resource in self.player.harvested_crops:
-            if self.player.harvested_crops[resource] <= 0:
-                return False
-            self.player.harvested_crops[resource] -= 1
-            return True
-
         return False
 
     def can_craft_selected(self):
@@ -292,6 +424,10 @@ class Inventory_UI:
         self.inventory.add_crafted_item(self.selected_craft_item, 1)
         if self.player is not None and self.category == "seeds":
             self.player.seed_inventory[self.selected_craft_item] = self.player.seed_inventory.get(self.selected_craft_item, 0) + 1
+        elif self.player is not None and self.category == "tools":
+            self.player.restore_tool(self.selected_craft_item)
+        else:
+            self.inventory.add_item_to_slot(Item(self.selected_craft_item))
 
         self.resource_allocations = {}
         return True
@@ -412,11 +548,11 @@ class Inventory_UI:
                 if slot.is_clicked(mouse_pos):
                     if slot.item.name != "":
                         # swap the items
-                        temp_item = Item(slot.item.name, slot.item.image)
+                        temp_item = slot.item.copy()
                         temp_amount = slot.amount
                         slot.remove_item(slot.item)
                         slot.place_item_to_slot(self.grabbed_item, self.grabbed_amount)
-                        self.grabbed_item = Item(temp_item.name, temp_item.image)
+                        self.grabbed_item = temp_item
                         self.grabbed_amount = temp_amount
                     else:
                         slot.place_item_to_slot(self.grabbed_item, self.grabbed_amount)
@@ -430,7 +566,12 @@ class Inventory_UI:
                 if slot.is_clicked(mouse_pos):
                     if slot.item.name == "":
                         continue
-                    self.grabbed_item = Item(slot.item.name, slot.item.image)
+                    if slot.item.place:
+                        self.inventory.select_placeable(slot.item.name)
+                        if self.inventory.get_selected_placeable() is not None:
+                            self.inventory.is_inv = False
+                        return
+                    self.grabbed_item = slot.item.copy()
                     self.grabbed_amount = slot.amount
                     self.grabbing = True
                     slot.remove_item(slot.item)  # remove the item from the slot.
@@ -442,8 +583,14 @@ class Inventory_UI:
         :return:
         """
         self.grabbed_item_rect = self.grabbed_item.image.get_rect()  # create the rect first
-        # Update image position to follow the mouse
-        self.grabbed_item_rect.center = pygame.mouse.get_pos()
+        controller_input = getattr(self.player, "controller_input", None)
+        targets = self.get_controller_targets()
+        if controller_input is not None and controller_input.connected and targets:
+            self.controller_focus_index %= len(targets)
+            self.grabbed_item_rect.center = targets[self.controller_focus_index].center
+        else:
+            # Update image position to follow the mouse.
+            self.grabbed_item_rect.center = pygame.mouse.get_pos()
 
         # Draw the image at the updated position
         self.screen.blit(self.grabbed_item.image, self.grabbed_item_rect)
@@ -479,6 +626,11 @@ class Slot_UI:
             else:
                 screen.blit(slot.empty_image, slot.position)
             slot.rect = pygame.Rect(slot.position[0], slot.position[1], slot_width, slot_width)
+            if (
+                slot.item.name
+                and slot.item.name == self.inventory.selected_item_name
+            ):
+                screen.blit(slot.hover_image, slot.hover_image.get_rect(center=slot.rect.center))
             # pygame.draw.rect(screen, (255, 0, 0), slot.rect, 2)  # Red rectangle outline
 
     @staticmethod
@@ -491,7 +643,7 @@ class Slot_UI:
         :return:
         """
         if slot.item.image:
-            image_rect = slot.item.image.get_rect(midleft=(slot_position[0] + slot_w * 0.5, slot_position[1] + slot_w * 0.42))
+            image_rect = slot.item.image.get_rect(center=(slot_position[0] + slot_w * 0.5, slot_position[1] + slot_w * 0.5))
             screen.blit(slot.item.image, image_rect)
         font = pygame.font.Font(None, 24)
         text = font.render(str(slot.amount), True, (255, 255, 255))
@@ -542,11 +694,16 @@ class Hot_Bar_UI:
         self.h_bar_slot_ui.display_slots(self.screen, self.position, self.slot_width)
 
     def select_slot(self, index):
+        if not 0 <= index < len(self.h_bar_slot_ui.hot_bar_slots):
+            return
         selected_slot = self.h_bar_slot_ui.hot_bar_slots[index]
         # draw the hover
         if selected_slot.item.name == "":
             return
-        self.screen.blit(selected_slot.hover_image, selected_slot.position)
+        self.screen.blit(
+            selected_slot.hover_image,
+            selected_slot.hover_image.get_rect(center=selected_slot.rect.center),
+        )
         pass
 
 
@@ -570,7 +727,7 @@ class Hot_Bar_Slot_UI:
             row = index // self.hot_bar_size
             col = index % self.hot_bar_size
             slot.position = (position[0] + slot_width*(-0.08+ col), position[1] + slot_width*(0.4+ row))
-            #slot.rect = pygame.Rect(slot.position[0], slot.position[1], slot_width-2, slot_width-2)
+            slot.rect = pygame.Rect(slot.position[0], slot.position[1], slot_width, slot_width)
 
             if slot.item.name != "":
                 screen.blit(slot.occupied_image, slot.position)
@@ -588,7 +745,7 @@ class Hot_Bar_Slot_UI:
         :return:
         """
         if slot.item.image:
-            image_rect = slot.item.image.get_rect(midleft=(slot_position[0] + slot_w * 0.5, slot_position[1] + slot_w * 0.42))
+            image_rect = slot.item.image.get_rect(center=(slot_position[0] + slot_w * 0.5, slot_position[1] + slot_w * 0.5))
             screen.blit(slot.item.image, image_rect)
         font = pygame.font.Font(None, 24)
         text = font.render(str(slot.amount), True, (255, 255, 255))
@@ -600,6 +757,12 @@ class Craft_System:
     def __init__(self):
         # holds all the craft recipes
         # we can add new recipes from npcs and each recipe requires a level.
+        crop_names = tuple(
+            sorted(
+                path.stem
+                for path in Path(rp("graphics", "environment", "crops")).glob("*.png")
+            )
+        )
         self.categories = {
             "tools": {
                 "axe": {"wood": 3, "iron": 2},
@@ -614,9 +777,12 @@ class Craft_System:
                 "bow": {"wood": 4, "shell": 1},
                 "spear": {"wood": 3, "rock": 2},
             },
-            "seeds": {
-                "corn": {"corn": 1},
-                "tomato": {"tomato": 1},
+            "seeds": {crop_name: {crop_name: 1} for crop_name in crop_names},
+            "resources": {
+                "fence": {"wood": 2},
+                "crate": {"wood": 4},
+                "wheelbarrow": {"wood": 6, "iron": 2},
+                "hay": {"weed": 3},
             },
         }
         self.recipe = {

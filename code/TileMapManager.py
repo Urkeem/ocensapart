@@ -1,6 +1,20 @@
 """Autotile helpers for rendering chunk layer masks from tileset atlases."""
 
+import pygame
+
 from sprites import TileMapSpriteSheet
+
+
+_TILESET_CACHE = {}
+_RAW_TILE_SPRITE_CACHE = {}
+_SCALED_TILE_SPRITE_CACHE = {}
+
+
+def preload_tilesets(filenames):
+    """Load shared tileset sheets before gameplay begins."""
+    for filename in filenames:
+        if filename not in _TILESET_CACHE:
+            _TILESET_CACHE[filename] = TileMapSpriteSheet(filename)
 
 TILEBITMASK = {
     0: (3, 3), 1: (3, 3), 2: (3, 0), 3: (3, 0), 4: (3, 3), 5: (3, 3), 6: (3, 0), 7: (3, 0), 8: (0, 3), 9: (0, 3), 10: (4, 4), 11: (0, 0), 12: (0, 3), 13: (0, 3), 14: (4, 4),
@@ -55,13 +69,13 @@ CARDINAL_TILE_KEYS = {
 
 def get_cardinal_mask_from_bitmask(bitmask):
     mask = 0
-    if bitmask & (1 << 6):
+    if bitmask & (1 << 1):
         mask |= 1
     if bitmask & (1 << 3):
         mask |= 2
-    if bitmask & (1 << 1):
-        mask |= 4
     if bitmask & (1 << 4):
+        mask |= 4
+    if bitmask & (1 << 6):
         mask |= 8
     return mask
 
@@ -84,6 +98,7 @@ class TileMap:
     ):
         self.world = world
         self.chunk = chunk
+        self.filename = filename
         self.layer_name = layer_name
         self.oob = oob
         self.layer_data = layer_data
@@ -91,7 +106,10 @@ class TileMap:
         self.source_tile_size = int(source_tile_size)
 
         self.width, self.height = chunk.chunk_size
-        self.tile_set = TileMapSpriteSheet(filename)
+        self.tile_set = _TILESET_CACHE.get(filename)
+        if self.tile_set is None:
+            self.tile_set = TileMapSpriteSheet(filename)
+            _TILESET_CACHE[filename] = self.tile_set
         self._bitmasks = None
 
     def invalidate_cache(self):
@@ -123,8 +141,10 @@ class TileMap:
 
     def create_tile_map_bitmasks(self):
         bitmasks = [0] * (self.width * self.height)
-        for i in range(self.width * self.height):
-            bitmasks[i] = self.get_bitmask(i)
+        local_layer = self.get_chunk_layer(self.chunk)
+        for i, value in enumerate(local_layer):
+            if value == 1:
+                bitmasks[i] = self.get_bitmask(i)
         return bitmasks
 
     def get_bitmask(self, index):
@@ -146,7 +166,14 @@ class TileMap:
 
     def get_cached_bitmask(self, index):
         if self._bitmasks is None:
-            self._bitmasks = self.create_tile_map_bitmasks()
+            self._bitmasks = [None] * (self.width * self.height)
+        if self._bitmasks[index] is None:
+            local_layer = self.get_chunk_layer(self.chunk)
+            self._bitmasks[index] = (
+                self.get_bitmask(index)
+                if local_layer[index] == 1
+                else 0
+            )
         return self._bitmasks[index]
 
     def get_tile_coords(self, index):
@@ -162,8 +189,32 @@ class TileMap:
         if coords is None:
             return None
 
-        tx, ty = coords
-        return self.tile_set.get_sprite(tx, ty, self.source_tile_size, self.source_tile_size)
+        key = (self.filename, self.source_tile_size, coords)
+        sprite = _RAW_TILE_SPRITE_CACHE.get(key)
+        if sprite is None:
+            tx, ty = coords
+            sprite = self.tile_set.get_sprite(
+                tx,
+                ty,
+                self.source_tile_size,
+                self.source_tile_size,
+            )
+            _RAW_TILE_SPRITE_CACHE[key] = sprite
+        return sprite
+
+    def get_scaled_tile_sprite(self, index, size):
+        coords = self.get_tile_coords(index)
+        if coords is None:
+            return None
+
+        size = (int(size[0]), int(size[1]))
+        key = (self.filename, self.source_tile_size, coords, size)
+        sprite = _SCALED_TILE_SPRITE_CACHE.get(key)
+        if sprite is None:
+            raw = self.get_tile_sprite(index)
+            sprite = raw if raw.get_size() == size else pygame.transform.scale(raw, size)
+            _SCALED_TILE_SPRITE_CACHE[key] = sprite
+        return sprite
 
     def get_cardinal_tile_key(self, index):
         local_layer = self.get_chunk_layer(self.chunk)

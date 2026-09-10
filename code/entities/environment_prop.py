@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
 from pathlib import Path
+import random
 
 import pygame
 
@@ -13,25 +15,44 @@ from utils import rp
 
 
 _ENV_IMAGE_CACHE: dict[tuple[str, float], pygame.Surface] = {}
+_ENV_SHEET_CACHE: dict[str, pygame.Surface] = {}
+PICKUP_PROP_TYPES = frozenset(
+    {"shell", "rock_piece", "hay", "flower", "pot", "coin", "gem"}
+)
+BREAKABLE_PROP_TYPES = frozenset({"crate", "barrel"})
 
 ASSET_PATH_ALIASES = {
     "props/general/buckets.png": "props/buckets/buckets.png#0",
 }
 
 PROP_SHEET_FRAMES = {
-    "props/flowers/flowerthin.png": (22, 40, "vertical"),
-    "props/flowers/flowermeduim.png": (22, 30, "vertical"),
-    "props/flowers/flowerlarge.png": (29, 31, "vertical"),
-    "props/flowers/flowersmall.png": (20, 23, "vertical"),
+    "shells/shell_spritesheet.png": (16, 16, "horizontal"),
+    "shells/shell_spritesheet2.png": (16, 16, "horizontal"),
+    "props/flowers_pot_fenced/flowerfenced.png": (80, 35, "vertical"),
+    "props/flowers_pot_fenced/flowerthin.png": (22, 40, "vertical"),
+    "props/flowers_pot_fenced/flowermeduim.png": (22, 30, "vertical"),
+    "props/flowers_pot_fenced/flowerlarge.png": (29, 31, "vertical"),
+    "props/flowers_pot_fenced/flowersmall.png": (20, 23, "vertical"),
     "props/pots/potsmeduim.png": (30, 32, "horizontal"),
     "props/pots/potsthin.png": (25, 27, "horizontal"),
     "props/buckets/buckets.png": (32, 32, "horizontal"),
+    "props/general/wheelbarrow.png": (36, 44, "horizontal", 48),
+}
+
+PROP_SHEET_FRAME_COUNTS = {
+    "shells/shell_spritesheet.png": 10,
+    "shells/shell_spritesheet2.png": 4,
+}
+
+NON_PROP_ASSETS = {
+    # Rendered by the shoreline underwater-biome layer, not as pickups.
+    "shells/under_water_stuff.png",
 }
 
 # Collision profiles to manipulate individual prop collision boxes.
 COLLISION_PROFILES = {
     "default": {
-        "inflate": (-0.35, -0.45),
+        "inflate": (-0.58, -0.76),
         "position": {
             "collision_anchor": "midbottom",
             "sprite_anchor": "midbottom",
@@ -39,15 +60,15 @@ COLLISION_PROFILES = {
         },
     },
     "rock": {
-        "inflate": (-0.65, -0.85),
+        "inflate": (-0.70, -0.86),
         "position": {
             "collision_anchor": "midbottom",
             "sprite_anchor": "midbottom",
-            "offset": (0, -24),
+            "offset": (0, -4),
         },
     },
     "crate": {
-        "inflate": (-0.25, -0.35),
+        "inflate": (-0.45, -0.55),
         "position": {
             "collision_anchor": "midbottom",
             "sprite_anchor": "midbottom",
@@ -55,12 +76,21 @@ COLLISION_PROFILES = {
         },
     },
     "barrel": {
-        "inflate": (-0.35, -0.40),
+        "inflate": (-0.50, -0.58),
         "position": {
             "collision_anchor": "midbottom",
             "sprite_anchor": "midbottom",
             "offset": (0, 0),
         },
+    },
+}
+
+LIGHT_SOURCE_PROFILES = {
+    "lantern": {
+        "anchor": (0.29, 0.37),
+        "radius": 240,
+        "color": (255, 190, 88),
+        "intensity": 120,
     },
 }
 
@@ -84,11 +114,12 @@ def _crop_prop_sheet_frame(image: pygame.Surface, asset_path: str, frame_index: 
     if frame_index is None or asset_path not in PROP_SHEET_FRAMES:
         return image
 
-    frame_w, frame_h, direction = PROP_SHEET_FRAMES[asset_path]
+    frame_w, frame_h, direction, *stride_override = PROP_SHEET_FRAMES[asset_path]
     if direction == "horizontal":
-        frame_count = max(1, image.get_width() // frame_w)
+        stride = stride_override[0] if stride_override else frame_w
+        frame_count = max(1, image.get_width() // stride)
         frame_index %= frame_count
-        rect = pygame.Rect(frame_index * frame_w, 0, frame_w, frame_h)
+        rect = pygame.Rect(frame_index * stride, 0, frame_w, frame_h)
     else:
         frame_count = max(1, image.get_height() // frame_h)
         frame_index %= frame_count
@@ -97,9 +128,21 @@ def _crop_prop_sheet_frame(image: pygame.Surface, asset_path: str, frame_index: 
     return image.subsurface(rect).copy()
 
 
+@lru_cache(maxsize=None)
 def list_environment_assets(*parts):
     folder = Path(rp("graphics", "environment", *parts))
-    return sorted(path.relative_to(Path(rp("graphics", "environment"))).as_posix() for path in folder.glob("*.png"))
+    environment_root = Path(rp("graphics", "environment"))
+    assets = []
+    for path in sorted(folder.glob("*.png")):
+        asset_path = path.relative_to(environment_root).as_posix()
+        if asset_path in NON_PROP_ASSETS:
+            continue
+        frame_count = PROP_SHEET_FRAME_COUNTS.get(asset_path)
+        if frame_count is None:
+            assets.append(asset_path)
+        else:
+            assets.extend(f"{asset_path}#{index}" for index in range(frame_count))
+    return tuple(assets)
 
 
 def get_environment_image(asset_path: str, scale: float = 2):
@@ -110,7 +153,12 @@ def get_environment_image(asset_path: str, scale: float = 2):
         return cached
 
     base_asset_path, frame_index = _split_asset_frame(asset_path)
-    image = import_file("graphics", "environment", *base_asset_path.split("/"))
+    if base_asset_path == "props/general/wheelbarrow.png" and frame_index is None:
+        frame_index = 0
+    image = _ENV_SHEET_CACHE.get(base_asset_path)
+    if image is None:
+        image = import_file("graphics", "environment", *base_asset_path.split("/"))
+        _ENV_SHEET_CACHE[base_asset_path] = image
     image = _crop_prop_sheet_frame(image, base_asset_path, frame_index)
     if scale != 1:
         image = pygame.transform.scale(
@@ -133,7 +181,12 @@ class EnvironmentProp(WorldObject):
         self.variant = prop_record.get("variant", "")
         self.scale = prop_record.get("scale", 2)
         self.alive = not prop_record.get("removed", False)
-        self.health = prop_record.get("health", 0)
+        default_health = 2 if self.prop_type in BREAKABLE_PROP_TYPES else 0
+        self.health = max(0, int(prop_record.get("health", default_health)))
+        if self.prop_type in BREAKABLE_PROP_TYPES and self.health == 0 and self.alive:
+            self.health = default_health
+        self.record["health"] = self.health
+        self.light_profile = LIGHT_SOURCE_PROFILES.get(self.prop_type)
         image = get_environment_image(prop_record["asset"], self.scale)
 
         super().__init__(tuple(prop_record["world_pos"]), image, anchor="midbottom")
@@ -145,6 +198,30 @@ class EnvironmentProp(WorldObject):
             self.collision_box = pygame.Rect(0, 0, 0, 0)
 
         self.pickup_rect = self.rect.inflate(24, 24)
+
+    @property
+    def emits_light(self):
+        return self.light_profile is not None
+
+    @property
+    def light_position(self):
+        anchor_x, anchor_y = self.light_profile.get("anchor", (0.5, 0.5))
+        return (
+            self.rect.left + self.rect.width * anchor_x,
+            self.rect.top + self.rect.height * anchor_y,
+        )
+
+    @property
+    def light_radius(self):
+        return self.record.get("light_radius", self.light_profile["radius"])
+
+    @property
+    def light_color(self):
+        return self.record.get("light_color", self.light_profile["color"])
+
+    @property
+    def light_intensity(self):
+        return self.record.get("light_intensity", self.light_profile["intensity"])
 
     def _get_collision_profile(self):
         return COLLISION_PROFILES.get(self.prop_type, COLLISION_PROFILES["default"])
@@ -178,7 +255,7 @@ class EnvironmentProp(WorldObject):
         return self.rect.bottom
 
     def damage(self, player_inventory=None):
-        if self.prop_type != "rock" or not self.alive:
+        if self.prop_type not in {"rock", *BREAKABLE_PROP_TYPES} or not self.alive:
             return None
 
         self.health -= 1
@@ -186,12 +263,25 @@ class EnvironmentProp(WorldObject):
         if self.health > 0:
             return {"broken": False, "drops": 0}
 
-        amount = 3 if self.variant == "big" else 1
+        if self.prop_type == "rock":
+            amount = 3 if self.variant == "big" else 1
+            drops = amount
+        else:
+            rng = random.Random(f"{self.prop_id}:drops")
+            drops = {"wood": rng.randint(1, 3)}
+            if self.prop_type == "crate" and rng.random() < 0.4:
+                drops["coin"] = rng.randint(1, 3)
+            elif self.prop_type == "barrel":
+                drops["rum"] = 1
+
         self.remove()
-        return {"broken": True, "drops": amount}
+        if self.prop_type in BREAKABLE_PROP_TYPES:
+            for item_name, amount in drops.items():
+                self.add_to_inventory(player_inventory, item_name, amount)
+        return {"broken": True, "drops": drops}
 
     def pickup(self, player_inventory=None):
-        if self.prop_type not in {"shell", "rock_piece"} or not self.alive:
+        if self.prop_type not in PICKUP_PROP_TYPES or not self.alive:
             return False
 
         item_name = self.record.get("pickup_item", self.prop_type)
@@ -202,6 +292,10 @@ class EnvironmentProp(WorldObject):
     def add_to_inventory(self, player_inventory, name, amount):
         if player_inventory is None:
             return
+        if name == "coin" and hasattr(player_inventory, "add_coins"):
+            player_inventory.add_coins(amount)
+            return
+        player_inventory = getattr(player_inventory, "inventory", player_inventory)
         for _ in range(amount):
             player_inventory.add_item_to_slot(
                 Item(

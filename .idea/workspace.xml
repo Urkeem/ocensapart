@@ -5,12 +5,821 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d4cb9510-e6c6-4307-8b01-fae2e733ea17" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/blood/blood_01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/blood/blood_02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/blood/blood_03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/coin/coin_01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/coin/coin_02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/coin/coin_03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/commet/comet_01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/commet/comet_02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/commet/comet_03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/confusion/confusion_01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/confusion/confusion_02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/confusion/confusion_03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/cut/cut_05.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/death/death_01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/death/death_02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/death/death_03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/explosion/explosion_big_01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/explosion/explosion_big_02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/explosion/explosion_big_03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/fire/fire.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/gem/gem_01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/gem/gem_02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/gem/gem_03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/impact/impact.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/spark/spark_01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/spark/spark_02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/fx/spark/spark_03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/heal/heal_01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/heal/heal_02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/impacts/circle/impact_circle_01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/impacts/circle/impact_circle_02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/impacts/circle/impact_circle_03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/impacts/circle/impact_circle_04.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/impacts/thunder/impact_thunder_01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/impacts/thunder/impact_thunder_02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/impacts/thunder/impact_thunder_03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/impacts/thunder/impact_thunder_04.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/impacts/thunder/impact_thunder_05.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/impacts/thunder/impact_thunder_06.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/bandage.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/blood.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/bone.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/bramble.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/branch.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/bread.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/bullet.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/coin_gold.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/environment/bush.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/environment/fruit.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/environment/grass.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/environment/hay.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/environment/leaf.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/environment/leaf_orange.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/environment/petal.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/environment/rock.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/environment/sand.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/environment/shell.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/environment/water.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/environment/wood.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/feather_yellow.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/glass.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/ice.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/jar.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/metal_bronze.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/metal_gold.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/metal_iron.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/particles/milk.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/smoke/smoke_01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/smoke/smoke_02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/smoke/smoke_03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/awesome.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/bad.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/bam.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/bang.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/bim.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/boom.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/break.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/combo.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/exclamation.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/extra.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/good.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/ko.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/miss.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/perfect.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/poof.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/pow.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/question_mark.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/wow.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/effects/word/yeah.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/animals/chicken/1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/animals/chicken/2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/animals/cow/1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/animals/cow/2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/animals/pig/1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/animals/pig/2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/boy/npc boy v00.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/boy/npc boy v01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/boy/npc boy v02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/boy/npc boy v03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/boy/npc boy v04.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/cat/npc cat v01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/cat/npc cat v02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/cat/npc cat v03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/cat/npc cat v04.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/cat/npc cat v05.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/chef/npc chef v00.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/chef/npc chef v01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/chef/npc chef v02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/chef/npc chef v03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/chef/npc chef v04.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dandy/npc dandy v00.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dandy/npc dandy v01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dandy/npc dandy v02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dandy/npc dandy v03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dandy/npc dandy v04.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dandy/npc dandy v05.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dog/npc dog v01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dog/npc dog v02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dog/npc dog v03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dog/npc dog v04.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dog/npc dog v05.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/girl/npc girl v00.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/girl/npc girl v01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/girl/npc girl v02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/girl/npc girl v03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/girl/npc girl v04.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/guard/hair/1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/guard/skin/1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/guard/weapons/sword.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/knight/npc knight v00.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/knight/npc knight v01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/knight/npc knight v02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/knight/npc knight v03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/knight/npc knight v04.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/knight/npc knight v05.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/knight/npc knight v06.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/man/npc man A v00.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/man/npc man A v01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/man/npc man A v02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/man/npc man A v03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/man/npc man A v04.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/man/npc man B v00.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/man/npc man B v01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/man/npc man B v02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/man/npc man B v03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/man/npc man B v04.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/nun/npc nun v00.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/nun/npc nun v01.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/nun/npc nun v02.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/nun/npc nun v03.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/sprites/npcs/nun/npc nun v04.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/main_py_documentation.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/main_py_documentation.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/Documentation.txt" beforeDir="false" afterPath="$PROJECT_DIR$/code/Documentation.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/TileMapManager.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/TileMapManager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/assets.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/assets.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/entities/environment_prop.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/entities/environment_prop.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/entities/house.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/entities/house.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/entities/npc.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/entities/npc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/entities/player.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/entities/player.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/entities/tree.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/entities/tree.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/inventory_item.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/inventory_item.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/pathfinding.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/pathfinding.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/scenemanager.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/scenemanager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/swimming.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/swimming.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/ui/hud.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/ui/hud.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/ui/inventory.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/ui/inventory.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/world/chunkmanager.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/world/chunkmanager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/world/ecology.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/world/ecology.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/world/soil.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/world/soil.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/props/general/buckets.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/world/water.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/world/water.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/world/weather.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/world/weather.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/world/worldmanager.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/world/worldmanager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/Pixel 16 Village V2/Pixel 16 Village PNGs/barn/barn.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/Pixel 16 Village V2/Pixel 16 Village PNGs/forge with anim/blacksmith_forge.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/Pixel 16 Village V2/Pixel 16 Village PNGs/houses/houses.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/Pixel 16 Village V2/Pixel 16 Village PNGs/market/market assets.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/Pixel 16 Village V2/Pixel 16 Village PNGs/tavern/tavern.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/Pixel 16 Village V2/Pixel 16 Village PNGs/tiles and exterior items/tiles and exterior items.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/character/clothes/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/character/clothes/1.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/character/hair/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/character/hair/1.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/character/skins/1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_0.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_10.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_100.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_101.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_102.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_103.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_104.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_105.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_106.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_107.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_108.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_109.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_11.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_110.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_111.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_112.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_113.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_114.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_115.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_116.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_117.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_118.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_119.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_12.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_120.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_121.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_122.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_123.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_124.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_125.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_126.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_127.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_128.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_129.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_13.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_130.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_131.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_132.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_133.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_134.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_135.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_136.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_137.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_138.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_139.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_14.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_140.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_141.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_142.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_143.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_144.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_145.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_146.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_147.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_148.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_149.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_15.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_150.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_151.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_152.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_153.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_154.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_155.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_156.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_157.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_158.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_159.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_16.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_160.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_161.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_162.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_163.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_164.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_165.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_166.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_167.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_168.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_169.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_17.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_170.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_171.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_172.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_173.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_174.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_175.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_176.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_177.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_178.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_179.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_18.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_180.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_181.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_182.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_183.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_184.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_185.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_186.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_187.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_188.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_189.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_19.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_190.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_191.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_192.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_193.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_194.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_195.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_196.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_197.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_198.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_199.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_20.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_200.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_201.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_202.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_203.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_204.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_205.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_206.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_207.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_208.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_209.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_21.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_210.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_211.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_212.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_213.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_214.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_215.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_216.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_217.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_218.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_219.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_22.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_220.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_221.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_222.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_223.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_224.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_225.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_226.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_227.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_228.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_229.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_23.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_230.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_231.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_232.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_233.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_234.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_235.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_236.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_237.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_238.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_239.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_24.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_240.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_241.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_242.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_243.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_244.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_245.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_246.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_247.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_248.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_249.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_25.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_26.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_27.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_28.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_29.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_30.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_31.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_32.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_33.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_34.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_35.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_36.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_37.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_38.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_39.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_40.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_41.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_42.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_43.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_44.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_45.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_46.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_47.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_48.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_49.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_5.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_50.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_51.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_52.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_53.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_54.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_55.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_56.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_57.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_58.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_59.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_6.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_60.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_61.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_62.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_63.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_64.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_65.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_66.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_67.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_68.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_69.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_7.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_70.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_71.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_72.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_73.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_74.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_75.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_76.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_77.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_78.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_79.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_8.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_80.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_81.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_82.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_83.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_84.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_85.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_86.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_87.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_88.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_89.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_9.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_90.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_91.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_92.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_93.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_94.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_95.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_96.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_97.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_98.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Clouds/cloud_99.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Water Decoration.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/Water.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/props/flowers/flowerfenced.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/environment/props/flowers_pot_fenced/flowerfenced.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/props/flowers/flowerlarge.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/environment/props/flowers_pot_fenced/flowerlarge.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/props/flowers/flowermeduim.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/environment/props/flowers_pot_fenced/flowermeduim.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/props/flowers/flowersmall.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/environment/props/flowers_pot_fenced/flowersmall.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/props/flowers/flowerthin.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/environment/props/flowers_pot_fenced/flowerthin.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/props/general/sackclosed.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/props/trainingyard/armsdisplay1.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/environment/props/trainingyard/armsdisplay_empty.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/shells/s1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/shells/s2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/shells/s3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/shells/s4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/shells/s5.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/shells/s6.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/environment/shells/s7.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Almond.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Apricot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Artichoke.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Asparagus.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Asparagus_Single.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Avocado.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Banana.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Banana_Peeled.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Beet.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Black Grapes.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Blackberry.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Blue Raspberry.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Blueberry.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Bok Choy.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Broccoli.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Cabbage.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Carrot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Carrot_White.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Cauliflower.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Cherry.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Cherry_Black.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Cocoa Beans.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Cocoa_Bean_Alt.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Cocoa_Bean_Single.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Coconut.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Coffee Beans.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Corn.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Cucumber.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Eggplant.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Garlic.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Ginger_Root.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Golden Apple.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Grapefruit.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Green Apple.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Green Chilli.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Green Fig.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Green Grapes.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Green Melon.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Green Paprika.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Hericot Beans.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Hops.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Kiwi.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Leek.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Lemon.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Lettuce.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Lime.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Mango.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Melon.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Olive.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Onion.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Onion_Red.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Orange Chilli.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Orange Paprika.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Orange.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Papaya.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Peanut.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Pear.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Peas.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Pineapple.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Pitaya.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Plum.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Pomegranate.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Potato.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Pumpkin.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Purple Cabbage.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Purple Fig.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Purple Grapes.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Radish.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Raspberry.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Red Apple.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Red Chilli.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Red Paprika.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Rosehip.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Spinach.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Starfruit.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Strawberry.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Tangerine.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Tea leaves.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Tomato.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Walnut.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Watermelon.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Watermelon_Slice.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Wheat.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/White Beet.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/White Mushroom.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Yellow Chilli.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Yellow Grapes.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/Sprites/Yellow Paprika.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/avocado.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/coconut.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/mango.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/orange.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/fruit/plum.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/game_ui/.all_ui.png-autosave.kra" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/game_ui/.all_ui.png-autosave.kra" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/houses/secondary/farmhouse.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/houses/primary/farmhouse.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/houses/secondary/fishermanhut.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/houses/primary/fishermanhut.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/houses/tertiary/fort.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/houses/tertiary/fort.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/icons/shell.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/icons/shell.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/bonus NPC palette reference.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/bonus NPC palette reference.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/bonus merchant goods.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/bonus merchant goods.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/bonus royal throne (layered).png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/bonus royal throne (layered).png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/bonus royal throne.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/bonus royal throne.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc baby A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc baby A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc baby A v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/baby/npc baby A v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc baby A v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/baby/npc baby A v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc baby A v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/baby/npc baby A v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc baby A v04.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/baby/npc baby A v04.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc baby B v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc baby B v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc baby B v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/baby/npc baby B v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc baby B v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/baby/npc baby B v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc baby B v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/baby/npc baby B v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc baby B v04.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/baby/npc baby B v04.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc bard A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc bard A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc bard A v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/bard/npc bard A v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc bard A v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/bard/npc bard A v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc bard A v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/bard/npc bard A v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc bard A v04.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/bard/npc bard A v04.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc bard B v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc bard B v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc bard B v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/bard/npc bard B v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc bard B v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/bard/npc bard B v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc bard B v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/bard/npc bard B v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc bard B v04.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/bard/npc bard B v04.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc dancer A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc dancer A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc dancer A v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dancer/npc dancer A v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc dancer A v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dancer/npc dancer A v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc dancer A v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dancer/npc dancer A v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc dancer A v04.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dancer/npc dancer A v04.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc dancer B v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc dancer B v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc dancer B v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dancer/npc dancer B v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc dancer B v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dancer/npc dancer B v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc dancer B v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dancer/npc dancer B v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc dancer B v04.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dancer/npc dancer B v04.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc king A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc king A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc king A v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/king/npc king A v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc king A v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/king/npc king A v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc king A v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/king/npc king A v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc king A v04.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/king/npc king A v04.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc merchant A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc merchant A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc merchant A v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/merchant/npc merchant A v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc merchant A v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/merchant/npc merchant A v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc merchant A v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/merchant/npc merchant A v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc merchant B v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc merchant B v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc merchant B v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/merchant/npc merchant B v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc merchant B v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/merchant/npc merchant B v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc merchant B v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/merchant/npc merchant B v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc merchant C v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc merchant C v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc merchant C v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/merchant/npc merchant C v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc merchant C v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/merchant/npc merchant C v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc merchant C v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/merchant/npc merchant C v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc merchant D v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc merchant D v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc merchant D v01.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc merchant D v02.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc merchant D v03.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc mystic A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc mystic A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc mystic A v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/mystic/npc mystic A v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc mystic A v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/mystic/npc mystic A v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc mystic A v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/mystic/npc mystic A v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old man A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc old man A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old man A v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_man/npc old man A v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old man A v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_man/npc old man A v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old man A v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_man/npc old man A v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old man A v04.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_man/npc old man A v04.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old man B v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc old man B v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old man B v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_man/npc old man B v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old man B v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_man/npc old man B v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old man B v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_man/npc old man B v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old man B v04.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_man/npc old man B v04.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old woman A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc old woman A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old woman A v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_woman/npc old woman A v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old woman A v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_woman/npc old woman A v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old woman A v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_woman/npc old woman A v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old woman A v04.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_woman/npc old woman A v04.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old woman B v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc old woman B v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old woman B v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_woman/npc old woman B v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old woman B v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_woman/npc old woman B v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old woman B v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_woman/npc old woman B v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old woman B v04.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_woman/npc old woman B v04.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old woman C v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc old woman C v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old woman C v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_woman/npc old woman C v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old woman C v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_woman/npc old woman C v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old woman C v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_woman/npc old woman C v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc old woman C v04.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_woman/npc old woman C v04.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc queen A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc queen A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc queen A v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/queen/npc queen A v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc queen A v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/queen/npc queen A v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc queen A v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/queen/npc queen A v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc queen A v04.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/queen/npc queen A v04.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc woman A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc woman A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc woman A v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/woman/npc woman A v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc woman A v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/woman/npc woman A v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc woman A v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/woman/npc woman A v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc woman A v04.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/woman/npc woman A v04.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc woman B v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/v00 only/npc woman B v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc woman B v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/woman/npc woman B v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc woman B v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/woman/npc woman B v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc woman B v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/woman/npc woman B v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/npc woman B v04.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/woman/npc woman B v04.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/about the old versions.txt" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/about the old versions.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc bard v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc bard v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc bard v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc bard v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc bard v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc bard v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc dancer v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc dancer v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc dancer v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc dancer v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc dancer v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc dancer v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc fortune teller v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc fortune teller v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc fortune teller v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc fortune teller v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc fortune teller v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc fortune teller v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc king v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc king v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc king v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc king v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc king v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc king v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc merchant big v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc merchant big v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc merchant big v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc merchant big v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc merchant big v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc merchant big v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc old man v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc old man v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc old man v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc old man v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc old man v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc old man v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc old woman v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc old woman v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc old woman v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc old woman v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc old woman v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc old woman v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc peasant mother v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc peasant mother v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc peasant mother v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc peasant mother v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc peasant mother v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc peasant mother v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc queen v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc queen v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc queen v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc queen v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc queen v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc queen v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc royal guard big v01.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc royal guard big v01.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc royal guard big v02.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc royal guard big v02.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/old versions (deprecated)/npc royal guard big v03.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/old versions (deprecated)/npc royal guard big v03.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/readme.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc baby A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/baby/npc baby A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc baby B v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/baby/npc baby B v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc bard A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/bard/npc bard A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc bard B v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/bard/npc bard B v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc dancer A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dancer/npc dancer A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc dancer B v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/dancer/npc dancer B v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc king A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/king/npc king A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc merchant A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/merchant/npc merchant A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc merchant B v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/merchant/npc merchant B v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc merchant C v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/merchant/npc merchant C v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc merchant D v00.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc mystic A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/mystic/npc mystic A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc old man A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_man/npc old man A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc old man B v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_man/npc old man B v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc old woman A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_woman/npc old woman A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc old woman B v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_woman/npc old woman B v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc old woman C v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/old_woman/npc old woman C v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc queen A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/queen/npc queen A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc woman A v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/woman/npc woman A v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/v00 only/npc woman B v00.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npcs/woman/npc woman B v00.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs/version 00.txt" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/npc_extra_stuff/version 00.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/bonus NPC palette reference.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc boy v00.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc boy v01.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc boy v02.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc boy v03.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc boy v04.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc cat v01.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc cat v02.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc cat v03.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc cat v04.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc cat v05.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc chef v00.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc chef v01.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc chef v02.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc chef v03.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc chef v04.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc dandy v00.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc dandy v01.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc dandy v02.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc dandy v03.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc dandy v04.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc dandy v05.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc dog v01.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc dog v02.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc dog v03.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc dog v04.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc dog v05.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc girl v00.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc girl v01.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc girl v02.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc girl v03.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc girl v04.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc guard v00.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc guard v01.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc guard v02.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc guard v03.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc guard v04.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc guard v05.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc guard v06.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc knight v00.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc knight v01.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc knight v02.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc knight v03.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc knight v04.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc knight v05.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc knight v06.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc man A v00.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc man A v01.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc man A v02.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc man A v03.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc man A v04.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc man B v00.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc man B v01.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc man B v02.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc man B v03.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc man B v04.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc nun v00.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc nun v01.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc nun v02.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc nun v03.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/npc nun v04.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/readme.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/npcs2/version 00.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/objects/bush.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/objects/flower.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/objects/merchant.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/objects/mushroom.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/objects/mushrooms.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/objects/stump_medium.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/objects/stump_small.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/objects/sunflower.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/objects/tree_medium.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/objects/tree_small.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/rain/drops/0.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/environment/weather/rain/drops/0.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/rain/drops/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/environment/weather/rain/drops/1.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/rain/drops/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/environment/weather/rain/drops/2.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/rain/floor/0.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/environment/weather/rain/floor/0.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/rain/floor/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/environment/weather/rain/floor/1.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/rain/floor/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/sprites/environment/weather/rain/floor/2.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/b.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/bl.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/bm.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/br.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/l.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/lm.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/lr.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/lrb.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/lrt.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/o.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/r.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/rm.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/soil.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/t.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/tb.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/tbl.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/tbr.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/tl.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/tm.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/tr.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil/x.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil_water/0.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil_water/1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/soil_water/2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/stumps/fruit.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/stumps/oak.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/stumps/palm.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/stumps/small.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/stumps/tropical.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/stumps/tropicfruit.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/stumps/wood.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/water/0.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/water/1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/water/2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/sprites/water/3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/tilesets/beach.png" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/tilesets/beach.png" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,7 +827,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="1003" />
+    <option name="cachedIndexableFilesCount" value="2409" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -34,10 +843,72 @@
     <commands />
     <urls />
   </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.3032474168901866" />
+      <entry key="MS500" value="2.7114659697847587" />
+      <entry key="S2" value="5.471716521305421" />
+      <entry key="S5" value="12.22054074343119" />
+      <entry key="S10" value="22.116999937169137" />
+      <entry key="S30" value="39.05239054938381" />
+      <entry key="S60" value="46.122155874078864" />
+      <entry key="M2" value="50.30575029188273" />
+      <entry key="M5" value="53.633535459531096" />
+      <entry key="M10" value="68.95961888097504" />
+      <entry key="M15" value="99.87706214892576" />
+      <entry key="M30" value="221.8731770212003" />
+      <entry key="H1" value="466.79629464185734" />
+      <entry key="H2" value="775.1600552197892" />
+      <entry key="H4" value="1064.5109076604044" />
+      <entry key="D1" value="5306.00088580999" />
+      <entry key="W1" value="16188.526172492224" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="0.0" />
+      <entry key="S30" value="0.0" />
+      <entry key="S60" value="0.0" />
+      <entry key="M2" value="0.0" />
+      <entry key="M5" value="0.0" />
+      <entry key="M10" value="4.780968297238523E-166" />
+      <entry key="M15" value="7.703451471780439E-111" />
+      <entry key="M30" value="1.2412427599349623E-55" />
+      <entry key="H1" value="4.982452025697805E-28" />
+      <entry key="H2" value="3.156723196742377E-14" />
+      <entry key="H4" value="2.512657152130721E-7" />
+      <entry key="D1" value="0.14154043738416777" />
+      <entry key="W1" value="1.370007452333423" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="1.180988062442648" />
+      <entry key="MS500" value="2.6503778697076235" />
+      <entry key="S2" value="5.441553415327837" />
+      <entry key="S5" value="12.194182547881194" />
+      <entry key="S10" value="22.09283344672505" />
+      <entry key="S30" value="39.037793004490986" />
+      <entry key="S60" value="46.11346079036773" />
+      <entry key="M2" value="50.30098649629932" />
+      <entry key="M5" value="53.63150263735716" />
+      <entry key="M10" value="68.958364804643" />
+      <entry key="M15" value="99.87590697032053" />
+      <entry key="M30" value="221.87191410363428" />
+      <entry key="H1" value="466.79487700967826" />
+      <entry key="H2" value="775.1588120899869" />
+      <entry key="H4" value="1064.5100301876241" />
+      <entry key="D1" value="5306.141459504703" />
+      <entry key="W1" value="16189.89556331367" />
+    </decayedShown>
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3
 }</component>
   <component name="ProjectId" id="2spEgRQnmi1KGB2Cr3fDnBHjpt1" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -72,31 +943,34 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
     &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/akeem/Desktop/PirateBay/graphics/sprites/environment&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/akeem/Desktop/PirateBay/graphics/sprites/npcs/guard/hair&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\environment" />
-      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\character\hair" />
-      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\character\clothes" />
-      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\character" />
-      <recent name="C:\Users\akeem\Desktop\Pirate Bay\graphics\icons" />
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\npcs\guard\hair" />
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\npcs\guard\skin" />
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\npcs\guard\weapons" />
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\icons" />
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\effects\fx\blood" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\environment\props\buckets" />
-      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\environment\props\general" />
-      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\houses\tertiary" />
-      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\houses\secondary" />
-      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\houses\primary" />
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\effects\fx\explosion" />
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\effects\particles\environment" />
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\effects\particles" />
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\effects" />
+      <recent name="C:\Users\akeem\Desktop\PirateBay\graphics\sprites\environment\weather" />
     </key>
   </component>
   <component name="RunManager">
@@ -109,7 +983,6 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="SDK_NAME" value="Python 3.12" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -129,7 +1002,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-b63d5a1f7c97-b61e75351b1f-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-261.22158.340" />
+        <option value="bundled-python-sdk-50341a9f1f9c-c2ffad84badb-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-261.26222.68" />
       </set>
     </attachedChunks>
   </component>

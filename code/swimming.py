@@ -42,12 +42,20 @@ class WaterDepthResolver:
         chunk, idx, _ = self.get_tile_data(tile)
         if chunk is None:
             return False
-        return chunk.layers["terrain"][idx] != -1
+        return self.is_land_or_dock(chunk, idx)
+
+    @staticmethod
+    def is_land_or_dock(chunk, idx):
+        dock_layer = chunk.layers.get("dock")
+        return (
+            chunk.layers["terrain"][idx] != -1
+            or (dock_layer is not None and dock_layer[idx] is not None)
+        )
 
     def water_depth_at(self, world_pos):
         tile = self.world_to_tile(world_pos)
         chunk, idx, local = self.get_tile_data(tile)
-        if chunk is None or chunk.layers["terrain"][idx] != -1:
+        if chunk is None or self.is_land_or_dock(chunk, idx):
             return 0.0
 
         local_x, local_y = local
@@ -71,7 +79,7 @@ class WaterDepthResolver:
                 ny = local_y + dy
                 if 0 <= nx < chunk_w and 0 <= ny < chunk_h:
                     nidx = chunk.get_index(nx, ny)
-                    if chunk.layers["terrain"][nidx] != -1:
+                    if WaterDepthResolver.is_land_or_dock(chunk, nidx):
                         return True
         return False
 

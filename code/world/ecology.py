@@ -82,7 +82,7 @@ MANGROVE = TreeRule(
     min_spacing=2,
     base_chance=0.16,
     can_spawn_near_water=True,
-    spawn_on_tiles=("mud", "swamp", "grass"),
+    spawn_on_tiles=("grass",),
     size_range=(0.85, 1.10),
 )
 
@@ -153,14 +153,15 @@ CHERRY = TreeRule(
 
 
 BIOME_ECOLOGY: Dict[str, BiomeEcology] = {
-    "forest": BiomeEcology("forest", tree_density=0.72, allow_trees=True, tree_rules=(OAK, PINE, BIRCH, PEACH, APPLE, CHERRY)),
-    "grassland": BiomeEcology("plains", tree_density=0.60, allow_trees=True, tree_rules=(OAK, BIRCH, APPLE, PEACH, APPLE, CHERRY)),
-    "swamp": BiomeEcology("swamp", tree_density=0.28, allow_trees=True, tree_rules=(MANGROVE, DEAD_TREE)),
+    "grassland_and_forest": BiomeEcology(
+        "grassland_and_forest",
+        tree_density=0.66,
+        allow_trees=True,
+        tree_rules=(OAK, PINE, BIRCH, PEACH, APPLE, CHERRY, PALM, MANGROVE),
+    ),
     "coast": BiomeEcology("coast", tree_density=0.46, allow_trees=True, tree_rules=(PALM, DEAD_TREE)),
     "beach": BiomeEcology("coast", tree_density=0.46, allow_trees=True, tree_rules=(PALM, DEAD_TREE)),
-    "jungle": BiomeEcology("jungle", tree_density=0.56, allow_trees=True, tree_rules=(PALM, MANGROVE, OAK, BIRCH)),
     "mountain": BiomeEcology("mountain", tree_density=0.30, allow_trees=True, tree_rules=(PINE,BIRCH, OAK, CHERRY)),
-    "highlands": BiomeEcology("mountain", tree_density=0.38, allow_trees=True, tree_rules=(PINE, APPLE, BIRCH)),
     "desert": BiomeEcology("desert", tree_density=0.10, allow_trees=True, tree_rules=(DEAD_TREE, PALM, BIRCH)),
     "dryland": BiomeEcology("desert", tree_density=0.56, allow_trees=True, tree_rules=(DEAD_TREE, PALM)),
     "deep_ocean": BiomeEcology("deep_ocean", tree_density=0.0, allow_trees=False, tree_rules=()),

@@ -10,7 +10,7 @@ from typing import Any, Optional
 import pygame
 from math import sin
 
-from assets import LoadAssets
+from assets import LoadAssets, get_shared_assets
 from inventory_item import Item
 from sprites import AnimatedWorldObject, WorldObject
 from core.support import import_file, rp
@@ -100,17 +100,14 @@ TREE_VISUALS: dict[str, TreeVisualProfile] = {
 # Global caches
 # --------------------------------------------------
 
-_CACHED_ASSETS: Optional[LoadAssets] = None
 _FRAME_CACHE: dict[tuple[str, tuple[int, int]], list[pygame.Surface]] = {}
 _IMAGE_CACHE: dict[tuple[str, str, str], pygame.Surface] = {}
 _SOUND_CACHE: dict[str, pygame.mixer.Sound] = {}
+STUMP_LIFETIME = 30.0
 
 
 def get_assets() -> LoadAssets:
-    global _CACHED_ASSETS
-    if _CACHED_ASSETS is None:
-        _CACHED_ASSETS = LoadAssets()
-    return _CACHED_ASSETS
+    return get_shared_assets()
 
 
 def get_cached_image(folder: str, filename: str, cache_group: str = "default") -> pygame.Surface:
@@ -226,7 +223,7 @@ class FruitPickupParticle(WorldObject):
             return
 
         if self.player is not None:
-            player_hitbox = getattr(self.player, "collision_box", self.player.rect)
+            player_hitbox = getattr(self.player, "feet_collision_box", self.player.rect)
             if player_hitbox.colliderect(self.rect):
                 self.collect()
                 return
@@ -251,7 +248,7 @@ class FruitPickupParticle(WorldObject):
         self.rect.center = (round(self.pos.x), round(self.pos.y))
 
         if self.player is not None:
-            player_hitbox = getattr(self.player, "collision_box", self.player.rect)
+            player_hitbox = getattr(self.player, "feet_collision_box", self.player.rect)
             if player_hitbox.colliderect(self.rect) or self.pos.distance_to(self.player.rect.center) <= (self.arrive_radius * 2):
                 self.collect()
                 return
@@ -260,6 +257,8 @@ class FruitPickupParticle(WorldObject):
 
 
 class Tree(AnimatedWorldObject):
+    SORT_Y_OFFSET = 8
+
     FRUITS = [
         "Golden Apple", "Green Apple", "Red Apple", "Orange", "Green Fig",
         "Purple Fig", "Black Grapes", "Green Grapes", "Purple Grapes", "Yellow Grapes",
@@ -304,6 +303,8 @@ class Tree(AnimatedWorldObject):
         self.alive = self.health > 0
         self.death_handled = False
         self.drops_collected = False
+        self.stump_elapsed = max(0.0, float(self.tree_data.get("stump_elapsed", 0.0)))
+        self.expired = False
 
         frames = self._build_frames(profile, scale)
         super().__init__(pos, frames, anchor="midbottom", animation_speed=animation_speed, loop=True)
@@ -318,6 +319,10 @@ class Tree(AnimatedWorldObject):
             self._become_stump()
             self.drops_collected = True
         self.axe_sound = get_cached_sound(rp("audio", "axe.mp3"))
+
+    @property
+    def sort_y(self):
+        return self.rect.bottom + self.SORT_Y_OFFSET
 
     def _stable_fruit_seed(self) -> int:
         parts = (
@@ -404,15 +409,25 @@ class Tree(AnimatedWorldObject):
         self.child_particles.clear()
 
     def _setup_collision(self, profile: TreeVisualProfile):
-        inflate_x = self.rect.width * profile.collision_inflate[0]
-        inflate_y = self.rect.height * profile.collision_inflate[1]
-        self.collision_box = self.rect.copy().inflate(inflate_x, inflate_y)
-        self.collision_box.centery += profile.collision_offset_y
+        width_ratio = max(0.08, 1.0 + profile.collision_inflate[0])
+        height_ratio = max(0.06, 1.0 + profile.collision_inflate[1])
+        self.collision_box = pygame.Rect(
+            0,
+            0,
+            max(8, int(self.rect.width * width_ratio)),
+            max(8, int(self.rect.height * height_ratio)),
+        )
+        self.collision_box.midbottom = (
+            self.rect.centerx,
+            self.rect.bottom - max(0, profile.collision_offset_y),
+        )
 
     def _setup_drops(self, profile: TreeVisualProfile):
-        self.wood_icon = get_cached_image("graphics/stumps", "wood.png", "icon")
+        self.wood_icon = get_cached_image("graphics/icons", "wood.png", "icon")
 
         self.fruit_name, self.fruit_count = self._choose_fruit(profile)
+        if self.tree_data.get("fruit_collected", False):
+            self.fruit_count = 0
 
         if self.fruit_name:
             self.fruit_surf = get_cached_image("graphics/fruiticons", f"{self.fruit_name}.png", "fruit")
@@ -508,8 +523,23 @@ class Tree(AnimatedWorldObject):
 
         self._spawn_fruit_pickups(player, player_inventory, 1)
         self.fruit_count -= 1
+        if self.fruit_count <= 0:
+            self.tree_data["fruit_collected"] = True
         if self.child_particles:
             self.child_particles.pop().visible = False
+
+    def collect_fruit(self, player_inventory=None):
+        """Collect all ripe canopy fruit through the player's interact action."""
+        if not self.alive or self.fruit_count <= 0 or not self.fruit_name:
+            return 0
+        amount = self.fruit_count
+        self._add_inventory_items(player_inventory, self.fruit_name, self.fruit_surf, amount)
+        self.fruit_count = 0
+        self.tree_data["fruit_collected"] = True
+        for fruit_particle in self.child_particles:
+            fruit_particle.visible = False
+        self.child_particles.clear()
+        return amount
 
     def damage(self, player=None, player_inventory=None):
         if not self.alive:
@@ -539,6 +569,13 @@ class Tree(AnimatedWorldObject):
 
     def update(self, dt, player_group=None, dimmed_alpha=120, near_chunks=None, time=None):
         self.tree_visibility(self.path_find, self.c_s, near_chunks)
+        if not self.alive:
+            self.stump_elapsed += max(0.0, float(dt))
+            self.tree_data["stump_elapsed"] = self.stump_elapsed
+            if self.stump_elapsed >= STUMP_LIFETIME:
+                self.expired = True
+                self.show = False
+
         if not self.show:
             return
 
@@ -566,3 +603,13 @@ class Tree(AnimatedWorldObject):
         for particle in self.active_pickup_particles:
             if particle.alive:
                 yield particle
+
+
+def prewarm_tree_visual_cache(scale=(2, 2)):
+    """Build every tree species frame set before interactive gameplay."""
+    tree = object.__new__(Tree)
+    tree.assets = get_assets()
+    for profile in TREE_VISUALS.values():
+        tree.tree_name = profile.base_name
+        tree._build_frames(profile, scale)
+    get_cached_sound(rp("audio", "axe.mp3"))

@@ -8,12 +8,45 @@ from core.support import import_folder
 from utils import rp
 
 
+GAME_MINUTES_PER_DAY = 24 * 60
+REAL_SECONDS_PER_GAME_DAY = 15 * 60
+WIND_FRAME_COUNT = 48
+WIND_ANIMATION_FPS = 24
+SUMMER_PARTICLE_FRAME_COUNT = 6
+SUMMER_PARTICLE_ANIMATION_FPS = 12
+SUMMER_PARTICLE_LIFETIME_SCALE = 0.65
+
+
+def load_horizontal_frames(asset_path, frame_count):
+    """Slice one horizontal spritesheet into equally sized animation frames."""
+    sheet = pygame.image.load(rp(*asset_path)).convert_alpha()
+    if frame_count <= 0 or sheet.get_width() % frame_count:
+        raise ValueError(
+            f"Weather sheet {asset_path!r} cannot be split into {frame_count} frames"
+        )
+    frame_width = sheet.get_width() // frame_count
+    return tuple(
+        sheet.subsurface(
+            pygame.Rect(index * frame_width, 0, frame_width, sheet.get_height())
+        ).copy()
+        for index in range(frame_count)
+    )
+
+
+def load_weather_folder(*parts, legacy_parts=()):
+    images = import_folder("graphics", "environment", "weather", *parts)
+    if not images and legacy_parts:
+        images = import_folder(*legacy_parts)
+    return images
+
+
 class GameTime:
     def __init__(self):
         self.time = 360.0
-        self.day_length = 1440
-        self.real_seconds_per_game_hour = 10
-        self.minute_speed = 60 / self.real_seconds_per_game_hour
+        self.day_length = GAME_MINUTES_PER_DAY
+        self.real_seconds_per_game_day = REAL_SECONDS_PER_GAME_DAY
+        self.real_seconds_per_game_hour = self.real_seconds_per_game_day / 24
+        self.minute_speed = self.day_length / self.real_seconds_per_game_day
         self.day = 1
         self.hours = 6
         self.minutes = 0
@@ -21,8 +54,9 @@ class GameTime:
     def update(self, dt):
         self.time += self.minute_speed * dt
         if self.time >= self.day_length:
-            self.time -= self.day_length
-            self.day += 1
+            elapsed_days = int(self.time // self.day_length)
+            self.time %= self.day_length
+            self.day += elapsed_days
         self.hours = int(self.time // 60)
         self.minutes = int(self.time % 60)
 
@@ -88,8 +122,22 @@ class SeasonCycle:
 
 
 class WeatherParticle:
-    def __init__(self, image, pos, velocity, lifetime, particle_type=None):
-        self.image = image
+    def __init__(
+        self,
+        image,
+        pos,
+        velocity,
+        lifetime,
+        particle_type=None,
+        *,
+        frames=None,
+        animation_fps=0,
+        start_frame=0,
+    ):
+        self.frames = tuple(frames or ())
+        self.animation_fps = float(animation_fps)
+        self.start_frame = int(start_frame) % len(self.frames) if self.frames else 0
+        self.image = self.frames[self.start_frame] if self.frames else image
         self.pos = pygame.Vector2(pos)
         self.velocity = pygame.Vector2(velocity)
         self.lifetime = lifetime
@@ -99,8 +147,15 @@ class WeatherParticle:
 
     def update(self, dt):
         self.age += dt
+        if self.frames and self.animation_fps > 0:
+            frame_index = (
+                self.start_frame + int(self.age * self.animation_fps)
+            ) % len(self.frames)
+            self.image = self.frames[frame_index]
         self.pos += self.velocity * dt
-        self.rect.topleft = (round(self.pos.x), round(self.pos.y))
+        self.rect = self.image.get_rect(
+            topleft=(round(self.pos.x), round(self.pos.y))
+        )
 
     @property
     def alive(self):
@@ -117,11 +172,51 @@ class WeatherSystem:
         self.time = GameTime()
         self.seasons = SeasonCycle(self.time.day)
         self.particles = []
-        self.rain_drops = import_folder("graphics", "rain", "drops")
-        self.rain_floor = import_folder("graphics", "rain", "floor")
-        self.cloud_surfs = import_folder("graphics", "environment", "Clouds")
+        self.rain_drops = load_weather_folder(
+            "rain",
+            "drops",
+            legacy_parts=("graphics", "rain", "drops"),
+        )
+        self.rain_floor = load_weather_folder(
+            "rain",
+            "floor",
+            legacy_parts=("graphics", "rain", "floor"),
+        )
+        self.cloud_surfs = load_weather_folder("Clouds")
+        self.wind_frames = load_horizontal_frames(
+            ("graphics", "environment", "weather", "wind", "wind.png"),
+            WIND_FRAME_COUNT,
+        )
+        self.summer_leaf_frames = load_horizontal_frames(
+            ("graphics", "effects", "particles", "environment", "leaf.png"),
+            SUMMER_PARTICLE_FRAME_COUNT,
+        )
+        self.summer_petal_frames = load_horizontal_frames(
+            ("graphics", "effects", "particles", "environment", "petal.png"),
+            SUMMER_PARTICLE_FRAME_COUNT,
+        )
+        # Compatibility for code that previously treated wind as loose images.
+        self.wind_surfs = self.wind_frames
+        self.cloud_images = []
+        for source in self.cloud_surfs or self.rain_floor:
+            image = pygame.transform.scale(
+                source,
+                (
+                    source.get_width() * self.CLOUD_SCALE,
+                    source.get_height() * self.CLOUD_SCALE,
+                ),
+            )
+            image.set_alpha(90)
+            self.cloud_images.append(image)
         self.font = pygame.font.Font(rp("font", "LycheeSoda.ttf"), 22)
         self.small_font = pygame.font.Font(rp("font", "LycheeSoda.ttf"), 18)
+        self._tint_surface = pygame.Surface(screen_size).convert()
+        self._tint_cache_key = None
+        self._status_panel = pygame.Surface((210, 66), pygame.SRCALPHA)
+        self._status_panel.fill((12, 18, 29, 170))
+        self._status_cache_key = None
+        self._status_title = None
+        self._status_subtitle = None
         self._soil_water_timer = 0.0
         self._cloud_spawn_timer = 0.0
 
@@ -135,6 +230,8 @@ class WeatherSystem:
 
     def resize(self, screen_size):
         self.screen_w, self.screen_h = screen_size
+        self._tint_surface = pygame.Surface(screen_size).convert()
+        self._tint_cache_key = None
 
     def update(self, dt, soil_layer=None):
         self.time.update(dt)
@@ -158,7 +255,9 @@ class WeatherSystem:
                 self._soil_water_timer = 2.0
 
     def spawn_weather_particles(self, dt):
-        if self.weather == "Rainy":
+        if self.current_season == "Summer" and self.weather == "Sunny":
+            self.spawn_summer_sunny(dt)
+        elif self.weather == "Rainy":
             self.spawn_rain(dt)
         elif self.weather == "Snowy":
             self.spawn_snow(dt)
@@ -166,6 +265,29 @@ class WeatherSystem:
             self.spawn_wind(dt)
         elif self.weather == "Cloudy":
             self.spawn_clouds(dt)
+
+    def spawn_summer_sunny(self, dt):
+        if not self.should_spawn(2.2, dt):
+            return
+        frames = random.choice((self.summer_leaf_frames, self.summer_petal_frames))
+        start_frame = random.randrange(len(frames))
+        image = frames[start_frame]
+        velocity_y = random.randint(34, 62)
+        full_crossing_lifetime = (
+            self.screen_h + image.get_height() + 40
+        ) / velocity_y
+        self.particles.append(
+            WeatherParticle(
+                image,
+                (random.randint(-20, self.screen_w + 20), -image.get_height() - 4),
+                (random.randint(-28, 28), velocity_y),
+                full_crossing_lifetime * SUMMER_PARTICLE_LIFETIME_SCALE,
+                "summer_sunny",
+                frames=frames,
+                animation_fps=0,
+                start_frame=start_frame,
+            )
+        )
 
     def should_spawn(self, rate_per_second, dt):
         return random.random() < rate_per_second * dt
@@ -205,9 +327,8 @@ class WeatherSystem:
             )
 
     def spawn_wind(self, dt):
-        if self.rain_floor and self.should_spawn(18, dt):
-            image = random.choice(self.rain_floor)
-            image = pygame.transform.scale(image, (max(2, image.get_width() * 2), image.get_height()))
+        if self.wind_frames and self.should_spawn(1.5, dt):
+            image = self.wind_frames[0]
             speed_x = random.randint(-420, -260)
             self.particles.append(
                 WeatherParticle(
@@ -215,24 +336,21 @@ class WeatherSystem:
                     (self.screen_w + 30, random.randint(0, self.screen_h)),
                     (speed_x, random.randint(-25, 25)),
                     (self.screen_w + image.get_width() + 120) / abs(speed_x),
+                    "wind",
+                    frames=self.wind_frames,
+                    animation_fps=WIND_ANIMATION_FPS,
                 )
             )
 
     def spawn_clouds(self, dt):
-        cloud_images = self.cloud_surfs or self.rain_floor
-        if not cloud_images:
+        if not self.cloud_images:
             return
 
         self._cloud_spawn_timer -= dt
         if self._cloud_spawn_timer > 0:
             return
 
-        image = random.choice(cloud_images).copy()
-        image = pygame.transform.scale(
-            image,
-            (image.get_width() * self.CLOUD_SCALE, image.get_height() * self.CLOUD_SCALE),
-        )
-        image.set_alpha(90)
+        image = random.choice(self.cloud_images)
         y = self.pick_cloud_y(image.get_height())
         if y is None:
             self._cloud_spawn_timer = 0.35
@@ -268,17 +386,21 @@ class WeatherSystem:
         return None
 
     def draw(self, screen):
-        for particle in self.particles:
-            screen.blit(particle.image, particle.rect)
-
-        self.draw_tint(screen)
+        self.draw_world_effects(screen)
         self.draw_status(screen)
 
+    def draw_world_effects(self, screen):
+        if self.particles:
+            screen.blits([(particle.image, particle.rect) for particle in self.particles])
+
+        self.draw_tint(screen)
+
     def draw_tint(self, screen):
-        tint = pygame.Surface((self.screen_w, self.screen_h), pygame.SRCALPHA)
-        tint_color = self.get_tint_color()
-        tint.fill(tint_color)
-        screen.blit(tint, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        tint_cache_key = (int(self.time.time), self.weather)
+        if tint_cache_key != self._tint_cache_key:
+            self._tint_surface.fill(self.get_tint_color()[:3])
+            self._tint_cache_key = tint_cache_key
+        screen.blit(self._tint_surface, (0, 0), special_flags=pygame.BLEND_RGB_MULT)
 
     def get_tint_color(self):
         minutes = self.time.time
@@ -303,15 +425,27 @@ class WeatherSystem:
         return (*tuple(map(int, color)), 255)
 
     def draw_status(self, screen):
-        panel = pygame.Surface((210, 66), pygame.SRCALPHA)
-        panel.fill((12, 18, 29, 170))
-        screen.blit(panel, (12, 118))
+        screen.blit(self._status_panel, (12, 118))
 
-        title = self.font.render(f"{self.time.formatted()}  {self.weather}", True, (236, 240, 245))
-        subtitle = self.small_font.render(
-            f"{self.current_season} Day {self.time.day}",
-            True,
-            (190, 204, 214),
+        status_cache_key = (
+            self.time.hours,
+            self.time.minutes,
+            self.weather,
+            self.current_season,
+            self.time.day,
         )
-        screen.blit(title, (24, 126))
-        screen.blit(subtitle, (24, 154))
+        if status_cache_key != self._status_cache_key:
+            self._status_title = self.font.render(
+                f"{self.time.formatted()}  {self.weather}",
+                True,
+                (236, 240, 245),
+            )
+            self._status_subtitle = self.small_font.render(
+                f"{self.current_season} Day {self.time.day}",
+                True,
+                (190, 204, 214),
+            )
+            self._status_cache_key = status_cache_key
+
+        screen.blit(self._status_title, (24, 126))
+        screen.blit(self._status_subtitle, (24, 154))
