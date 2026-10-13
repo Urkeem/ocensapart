@@ -1,10 +1,14 @@
 """Inventory data structures and Pygame UI widgets for item management."""
 
 import pygame
-from pathlib import Path
 from inventory_item import *
 from assets import LoadAssets
 from utils import rp
+from data.content_manifest import CROP_ASSETS, ITEM_ASSETS, normalize_content_id
+from data.crafting import RECIPES, recipe_for, recipes_for_category
+from data.items import TREE_FRUIT_IDS, item_definition, item_stack_size
+from data.crops import CROP_FRUIT_ICONS
+from gameplay.crafting import CraftingService
 
 
 _ICON_CACHE = {}
@@ -13,6 +17,35 @@ MAX_STACK_SIZE = 50
 
 def normalize_item_name(name):
     return name.lower().replace(" ", "_")
+
+
+def canonical_item_name(name):
+    """Keep fish identity stable while accepting old display-name saves."""
+    try:
+        from gameplay.fishing import fish_species
+
+        species = fish_species(name)
+        if species is not None:
+            return species.id
+    except (ImportError, AttributeError):
+        pass
+    normalized = normalize_content_id(name)
+    if normalized in TREE_FRUIT_IDS:
+        return normalized
+    return name
+
+
+def display_item_name(name):
+    try:
+        from gameplay.fishing import fish_species
+
+        species = fish_species(name)
+        if species is not None:
+            return species.name
+    except (ImportError, AttributeError):
+        pass
+    definition = item_definition(name)
+    return definition.display_name if definition is not None else str(name).replace("_", " ").title()
 
 
 def load_item_icon(name, size=(32, 32)):
@@ -25,6 +58,50 @@ def load_item_icon(name, size=(32, 32)):
     cached = _ICON_CACHE.get(key)
     if cached is not None:
         return cached
+
+    try:
+        from gameplay.fishing import fish_species, load_fish_icon
+
+        species = fish_species(name)
+        if species is not None:
+            image = load_fish_icon(species, size)
+            _ICON_CACHE[key] = image
+            return image
+    except (FileNotFoundError, ValueError, pygame.error):
+        pass
+
+    item_spec = ITEM_ASSETS.get(normalize_content_id(name))
+    if item_spec is not None and item_spec.role != "points_effect":
+        try:
+            sheet = pygame.image.load(rp(*item_spec.sheet.path.split("/"))).convert_alpha()
+            frame = sheet.subsurface(item_spec.sheet.frame_rects()[0]).copy()
+            image = pygame.transform.scale(frame, size)
+            _ICON_CACHE[key] = image
+            return image
+        except (FileNotFoundError, ValueError, pygame.error):
+            pass
+
+    item_data = item_definition(name)
+    if item_data is not None and item_data.icon_path:
+        try:
+            image = pygame.image.load(rp(*item_data.icon_path.split("/"))).convert_alpha()
+            image = pygame.transform.scale(image, size)
+            _ICON_CACHE[key] = image
+            return image
+        except (FileNotFoundError, pygame.error):
+            pass
+
+    fruit_icon = CROP_FRUIT_ICONS.get(normalize_content_id(name))
+    if fruit_icon is not None:
+        try:
+            image = pygame.image.load(
+                rp("graphics", "sprites", "fruiticons", fruit_icon)
+            ).convert_alpha()
+            image = pygame.transform.scale(image, size)
+            _ICON_CACHE[key] = image
+            return image
+        except (FileNotFoundError, pygame.error):
+            pass
 
     candidates = [
         f"{icon_name}.png",
@@ -52,8 +129,14 @@ def load_item_icon(name, size=(32, 32)):
                 continue
 
     try:
+        crop_spec = CROP_ASSETS.get(normalize_content_id(name))
+        crop_path = (
+            crop_spec.path
+            if crop_spec is not None
+            else f"graphics/sprites/environment/crops/{icon_name}.png"
+        )
         crop_sheet = pygame.image.load(
-            rp("graphics", "environment", "crops", f"{icon_name}.png")
+            rp(*crop_path.split("/"))
         ).convert_alpha()
         frame = crop_sheet.subsurface((16, 16, 16, 16)).copy()
         image = pygame.transform.scale(frame, size)
@@ -75,6 +158,7 @@ class Inventory:
         self.craft_system = Craft_System()
         self.crafted_counts = {}
         self.selected_item_name = None
+        self.hotbar_item_name = None
         pass
 
     def add_item_to_slot(self, item: Item, amount=1):
@@ -87,47 +171,67 @@ class Inventory:
         amount = max(0, int(amount))
         if amount == 0:
             return True
+        item.name = canonical_item_name(item.name)
+        stack_limit = item_stack_size(item.name)
         stackable_slots = [
             slot
             for slot in self.slots
-            if slot.item.name == item.name and slot.amount < MAX_STACK_SIZE
+            if slot.item.name == item.name and slot.amount < stack_limit
         ]
         empty_slots = [slot for slot in self.slots if slot.item.name == ""]
-        capacity = sum(MAX_STACK_SIZE - slot.amount for slot in stackable_slots)
-        capacity += len(empty_slots) * MAX_STACK_SIZE
+        capacity = sum(stack_limit - slot.amount for slot in stackable_slots)
+        capacity += len(empty_slots) * stack_limit
         if capacity < amount:
             return False
 
         remaining = amount
         for slot in stackable_slots:
-            added = min(remaining, MAX_STACK_SIZE - slot.amount)
+            added = min(remaining, stack_limit - slot.amount)
             slot.add_item(item, added)
             remaining -= added
             if remaining == 0:
                 return True
         for slot in empty_slots:
-            added = min(remaining, MAX_STACK_SIZE)
+            added = min(remaining, stack_limit)
             slot.add_item(item, added)
             remaining -= added
             if remaining == 0:
                 return True
         return True
 
+    def can_add_item(self, item_name, amount=1):
+        item_name = canonical_item_name(item_name)
+        stack_limit = item_stack_size(item_name)
+        capacity = sum(
+            stack_limit - slot.amount
+            for slot in self.slots
+            if slot.item.name == item_name and slot.amount < stack_limit
+        )
+        capacity += sum(slot.item.name == "" for slot in self.slots) * stack_limit
+        return capacity >= max(0, int(amount))
+
     def count_item(self, item_name):
-        return sum(slot.amount for slot in self.slots if slot.item.name == item_name)
+        item_name = canonical_item_name(item_name)
+        return sum(
+            slot.amount
+            for slot in self.slots
+            if canonical_item_name(slot.item.name) == item_name
+        )
 
     def find_slot(self, item_name):
+        item_name = canonical_item_name(item_name)
         for slot in self.slots:
-            if slot.item.name == item_name and slot.amount > 0:
+            if canonical_item_name(slot.item.name) == item_name and slot.amount > 0:
                 return slot
         return None
 
     def remove_item_count(self, item_name, amount=1):
+        item_name = canonical_item_name(item_name)
         if self.count_item(item_name) < amount:
             return False
         remaining = amount
         for slot in self.slots:
-            if slot.item.name != item_name or slot.amount <= 0:
+            if canonical_item_name(slot.item.name) != item_name or slot.amount <= 0:
                 continue
             removed = min(slot.amount, remaining)
             slot.amount -= removed
@@ -204,14 +308,14 @@ class Slot:
         if self.amount <= 0 or not self.item.name:
             self.item = item.copy()
             self.item.image = load_item_icon(item.name) or item.image
-        self.amount = min(MAX_STACK_SIZE, self.amount + max(0, int(amount)))
+        self.amount = min(item_stack_size(item.name), self.amount + max(0, int(amount)))
         # print(f"{item.name} was added to the inventory")
         pass
 
     def place_item_to_slot(self, item: Item, amount: int):
         self.item = item.copy()
         self.item.image = load_item_icon(item.name) or item.image
-        self.amount = min(MAX_STACK_SIZE, max(0, int(amount)))
+        self.amount = min(item_stack_size(item.name), max(0, int(amount)))
 
         pass
 
@@ -270,6 +374,12 @@ class Inventory_UI:
         :return:
         """
         self.draw_panel(self.inv_panel, "Inventory")
+        hint = self.small_font.render(
+            "Click: equip/select   Right-click: eat",
+            True,
+            (170, 184, 202),
+        )
+        self.screen.blit(hint, hint.get_rect(topright=(self.inv_panel.right - 12, self.inv_panel.y + 16)))
         self.slot_ui.display_slots(
             self.screen,
             (self.inv_panel.x + 12, self.inv_panel.y + 44),
@@ -300,6 +410,25 @@ class Inventory_UI:
             targets[self.controller_focus_index].inflate(5, 5),
             3,
             border_radius=8,
+        )
+
+    def focused_inventory_food(self):
+        """Return edible produce only when an inventory slot has focus.
+
+        Crafting targets, including seed recipes, deliberately do not count as
+        food even when their crop id matches an edible harvested crop.
+        """
+        if self.player is None:
+            return None
+        targets = self.get_controller_targets()
+        inventory_slots = [slot for slot in self.slot_ui.slots if slot.rect.width > 0]
+        if not targets or not inventory_slots:
+            return None
+        self.controller_focus_index %= len(targets)
+        if self.controller_focus_index >= len(inventory_slots):
+            return None
+        return self.player.inventory_food_name(
+            inventory_slots[self.controller_focus_index].item.name
         )
 
     def handle_controller_button(self, button):
@@ -408,10 +537,31 @@ class Inventory_UI:
     def can_craft_selected(self):
         if self.selected_craft_item is None:
             return False
-        recipe = self.inventory.craft_system.get_recipe(self.category, self.selected_craft_item)
+        game_state = getattr(self.player, "game_state", None)
+        recipe_definition = self.inventory.craft_system.get_recipe_definition(
+            self.category,
+            self.selected_craft_item,
+        )
+        if recipe_definition is None or not recipe_definition.is_unlocked(game_state):
+            return False
+        recipe = recipe_definition.ingredients
         if not recipe:
             return False
-        return all(self.resource_allocations.get(resource, 0) >= required for resource, required in recipe.items())
+        return all(
+            self.resource_allocations.get(resource, 0) >= required
+            and self.available_resource_count(resource) >= required
+            for resource, required in recipe.items()
+        )
+
+    def available_resource_count(self, resource):
+        return CraftingService(
+            self.inventory,
+            self.player,
+            getattr(self.player, "game_state", None),
+        ).available_count(
+            resource,
+            include_seed_inventory=self.category != "seeds",
+        )
 
     def craft_selected_item(self):
         """
@@ -421,21 +571,21 @@ class Inventory_UI:
         if not self.can_craft_selected():
             return False
 
-        self.inventory.add_crafted_item(self.selected_craft_item, 1)
-        if self.player is not None and self.category == "seeds":
-            self.player.seed_inventory[self.selected_craft_item] = self.player.seed_inventory.get(self.selected_craft_item, 0) + 1
-        elif self.player is not None and self.category == "tools":
-            self.player.restore_tool(self.selected_craft_item)
-        else:
-            self.inventory.add_item_to_slot(Item(self.selected_craft_item))
-
-        self.resource_allocations = {}
-        return True
+        result = CraftingService(
+            self.inventory,
+            self.player,
+            getattr(self.player, "game_state", None),
+        ).craft(self.category, self.selected_craft_item)
+        if result.success:
+            self.resource_allocations = {}
+            if self.category == "seeds" and self.player is not None:
+                self.player.select_seed(result.item_id)
+        return result.success
 
     def draw_item_label(self, rect, item_name, selected=False):
         crafted = self.inventory.get_crafted_count(item_name)
         self.draw_slot_surface(rect, item_name, crafted if crafted else "", selected)
-        label = self.small_font.render(item_name.title(), True, self.text_color)
+        label = self.small_font.render(display_item_name(item_name), True, self.text_color)
         self.screen.blit(label, label.get_rect(midtop=(rect.centerx, rect.bottom + 2)))
 
     def display_craft_panel(self):
@@ -445,7 +595,10 @@ class Inventory_UI:
         self.page_buttons = {}
         self.craft_button = None
 
-        items = self.inventory.craft_system.get_items(self.category)
+        items = self.inventory.craft_system.get_items(
+            self.category,
+            getattr(self.player, "game_state", None),
+        )
         start = self.craft_page * 5
         visible_items = items[start:start + 5]
         top_rect = pygame.Rect(self.craft_panel.x + 14, self.craft_panel.y + 44, self.craft_panel.width - 28, 128)
@@ -506,6 +659,12 @@ class Inventory_UI:
         """
         click_pos = mouse_pos[1]
 
+        if mouse_pos[0] == 3:
+            for slot in self.slot_ui.slots:
+                if slot.rect.collidepoint(click_pos) and slot.item.name:
+                    return self.player.consume_food(slot.item.name)
+            return 0
+
         for category, rect in self.category_buttons.items():
             if rect.collidepoint(click_pos):
                 self.category = category
@@ -526,13 +685,25 @@ class Inventory_UI:
             if rect.collidepoint(click_pos):
                 self.selected_craft_item = item_name
                 self.resource_allocations = {}
+                if (
+                    self.category == "seeds"
+                    and self.player is not None
+                    and self.player.seed_inventory.get(item_name, 0) > 0
+                ):
+                    self.player.select_seed(item_name)
+                elif (
+                    self.category in {"tools", "weapons"}
+                    and self.player is not None
+                    and self.player.is_tool_usable(item_name)
+                ):
+                    self.player.select_tool(item_name)
                 return
 
         for rect, resource, required in self.resource_buttons:
             if rect.collidepoint(click_pos):
                 if self.resource_allocations.get(resource, 0) >= required:
                     return
-                if self.consume_resource(resource):
+                if self.available_resource_count(resource) > self.resource_allocations.get(resource, 0):
                     self.resource_allocations[resource] = self.resource_allocations.get(resource, 0) + 1
                 return
 
@@ -571,6 +742,8 @@ class Inventory_UI:
                         if self.inventory.get_selected_placeable() is not None:
                             self.inventory.is_inv = False
                         return
+                    if self.player is not None and self.player.select_hotbar_item(slot.item.name):
+                        return True
                     self.grabbed_item = slot.item.copy()
                     self.grabbed_amount = slot.amount
                     self.grabbing = True
@@ -631,6 +804,8 @@ class Slot_UI:
                 and slot.item.name == self.inventory.selected_item_name
             ):
                 screen.blit(slot.hover_image, slot.hover_image.get_rect(center=slot.rect.center))
+            if slot.item.name and slot.item.name == self.inventory.hotbar_item_name:
+                screen.blit(slot.hover_image, slot.hover_image.get_rect(center=slot.rect.center))
             # pygame.draw.rect(screen, (255, 0, 0), slot.rect, 2)  # Red rectangle outline
 
     @staticmethod
@@ -663,48 +838,45 @@ class Hot_bar:
 
 
 class Hot_Bar_UI:
+    """Render the original five inventory slots as the bottom hotbar."""
+
     def __init__(self, inv, screen, position):
         self.screen = screen
         self.pos = position
         self.inventory = inv
-
         self.h_bar_slot_ui = Hot_Bar_Slot_UI(self.inventory)
-        self.grabbing = False
-        self.h_bar_image = self.inventory.assets.all_sprite_sheet.get_sprite(*self.inventory.assets.sprite_data["inv_bg"])
-        # Resize inventory image to be 4 pixels more in width than the slots row and column
-        self.slot_width = 66  # Assuming each slot is 66 pixels wide
-        self.h_bar_image = pygame.transform.scale(self.h_bar_image,(self.h_bar_image.get_width() *2.18, self.h_bar_image.get_height() * 2))
-
-        # Resize inventory image to be 4 pixels more in width than the slots row and column
-        self.slot_width = 66  # Assuming each slot is 66 pixels wide
-        num_slots_per_row = 10  # Keep the visible hotbar at five slots.
-        inv_width = ((num_slots_per_row * self.slot_width) // 2) + (self.h_bar_slot_ui.padding * 1.6)
-        """
-        inv_height = ((num_slots_per_row * self.slot_width) // 10) + (self.h_bar_slot_ui.padding * 1.6)
-        self.h_bar_image = pygame.transform.scale(self.h_bar_image, (inv_width, inv_height))"""
-        self.position = tuple(a-b for a, b in zip(self.pos, (inv_width//2, 64)))
+        self.slot_width = 66
+        background = self.inventory.assets.all_sprite_sheet.get_sprite(
+            *self.inventory.assets.sprite_data["inv_bg"]
+        )
+        self.h_bar_image = pygame.transform.scale(
+            background,
+            (
+                round(background.get_width() * 2.18),
+                round(background.get_height() * 2),
+            ),
+        )
+        inv_width = (5 * self.slot_width) + round(self.h_bar_slot_ui.padding * 1.6)
+        self.position = (self.pos[0] - inv_width // 2, self.pos[1] - 64)
 
     def display_hot_bar(self):
-        """
-        This function displays what ever is in the inventory it mostly handles the ui.
-        :return:
-        """
         self.screen.blit(self.h_bar_image, self.position)
-        # display all the slots in the inventory in a 5 x 5
         self.h_bar_slot_ui.display_slots(self.screen, self.position, self.slot_width)
 
     def select_slot(self, index):
         if not 0 <= index < len(self.h_bar_slot_ui.hot_bar_slots):
             return
-        selected_slot = self.h_bar_slot_ui.hot_bar_slots[index]
-        # draw the hover
-        if selected_slot.item.name == "":
-            return
+        slot = self.h_bar_slot_ui.hot_bar_slots[index]
         self.screen.blit(
-            selected_slot.hover_image,
-            selected_slot.hover_image.get_rect(center=selected_slot.rect.center),
+            slot.hover_image,
+            slot.hover_image.get_rect(center=slot.rect.center),
         )
-        pass
+
+    def slot_at(self, position):
+        for index, slot in enumerate(self.h_bar_slot_ui.hot_bar_slots):
+            if slot.rect.collidepoint(position):
+                return index
+        return None
 
 
 class Hot_Bar_Slot_UI:
@@ -755,36 +927,9 @@ class Hot_Bar_Slot_UI:
 
 class Craft_System:
     def __init__(self):
-        # holds all the craft recipes
-        # we can add new recipes from npcs and each recipe requires a level.
-        crop_names = tuple(
-            sorted(
-                path.stem
-                for path in Path(rp("graphics", "environment", "crops")).glob("*.png")
-            )
-        )
-        self.categories = {
-            "tools": {
-                "axe": {"wood": 3, "iron": 2},
-                "hoe": {"wood": 2, "rock": 1},
-                "water": {"wood": 2, "shell": 1},
-                "pickaxe": {"wood": 3, "rock": 4},
-                "shovel": {"wood": 2, "rock": 2},
-                "fishing rod": {"wood": 3, "shell": 2},
-            },
-            "weapons": {
-                "sword": {"wood": 2, "iron": 4},
-                "bow": {"wood": 4, "shell": 1},
-                "spear": {"wood": 3, "rock": 2},
-            },
-            "seeds": {crop_name: {crop_name: 1} for crop_name in crop_names},
-            "resources": {
-                "fence": {"wood": 2},
-                "crate": {"wood": 4},
-                "wheelbarrow": {"wood": 6, "iron": 2},
-                "hay": {"weed": 3},
-            },
-        }
+        self.categories = {}
+        for recipe in RECIPES.values():
+            self.categories.setdefault(recipe.category, {})[recipe.output_id] = dict(recipe.ingredients)
         self.recipe = {
             item: ingredients
             for recipes in self.categories.values()
@@ -801,8 +946,12 @@ class Craft_System:
     def get_categories(self):
         return list(self.categories.keys())
 
-    def get_items(self, category):
-        return list(self.categories.get(category, {}).keys())
+    def get_items(self, category, game_state=None):
+        return [recipe.output_id for recipe in recipes_for_category(category, game_state)]
 
     def get_recipe(self, category, item):
         return self.categories.get(category, {}).get(item, {})
+
+    @staticmethod
+    def get_recipe_definition(category, item):
+        return recipe_for(category, item)

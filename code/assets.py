@@ -92,8 +92,9 @@ DOORS = {
     "secondaryhouse": (18, 180, 132, 44),
     "secondaryhouse2": (157, 172, 83, 48),
     "bakerystewhouse": (133, 184, 32, 40),
+    "castle": (232, 401, 78, 68),
     "countinghouse": (0, 160, 28, 39),
-    "fort": (232, 401, 78, 68),
+    "fort": (72, 401, 78, 68),
     "harbouroffice": (0, 117, 32, 74),
     "pawnshop": (111, 245, 32, 64),
     "portcouncilchamber": (99, 264, 38, 42),
@@ -558,6 +559,15 @@ class LoadAssets:
             "left_spear_splash": [0, 0, 1, 1],
             "left_spear_thrust1": [1, 1, 1],
             "left_spear_thrust2": [1, 1, 1],
+        }
+        self.character_furniture_regions = {
+            "empty_shelves": (6, 39, 22, 79),
+            "bed": (103, 98, 43, 47),
+            "rug": (13, 194, 68, 40),
+            "bookshelf": (216, 199, 52, 55),
+            "stool1": (261, 265, 19, 19),
+            "stool2": (261, 287, 19, 19),
+            "table": (283, 259, 29, 49)
         }
         self.all_trees = {
             "palm": [(64, 0, 64, 75)],

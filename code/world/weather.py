@@ -60,6 +60,13 @@ class GameTime:
         self.hours = int(self.time // 60)
         self.minutes = int(self.time % 60)
 
+    def advance_to_next_morning(self, morning_minutes=6 * 60):
+        self.day += 1
+        self.time = float(morning_minutes % self.day_length)
+        self.hours = int(self.time // 60)
+        self.minutes = int(self.time % 60)
+        return self.day
+
     def formatted(self):
         return f"{self.hours:02}:{self.minutes:02}"
 

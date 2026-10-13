@@ -21,6 +21,9 @@ from scenemanager import HOUSE_SCENE_TEMPLATES
 from core.camera import Camera
 from entities.tree import STUMP_LIFETIME
 from gameplay.rendering import draw_farming_selector
+from gameplay.events import EventDispatcher
+from gameplay.game_state import GameState
+from gameplay.progression import ProgressionService
 from gameplay.world_objects import (
     collect_pickups_near_player,
     ensure_chunk_environment_objects,
@@ -134,10 +137,18 @@ class FarmingSystemTests(unittest.TestCase):
 
         self.assertTrue(self.soil.can_harvest_at_tile(tile))
         harvester = StubHarvester()
+        harvester.game_state = GameState()
+        harvester.event_dispatcher = EventDispatcher()
+        progression = ProgressionService(
+            harvester.game_state,
+            harvester.event_dispatcher,
+        )
         self.assertEqual(self.soil.harvest_at(pos, harvester), "corn")
         self.assertEqual(harvester.harvested_crops["corn"], 1)
         self.assertEqual(harvester.inventory.count_item("corn"), 1)
+        self.assertEqual(harvester.game_state.progression.farming_points, 2)
         self.assertIsNone(self.soil.get_tile_state(tile)["plant"])
+        progression.close()
 
     def test_multiple_plants_remain_in_the_render_cache(self):
         for tile in ((1, 1), (2, 1)):

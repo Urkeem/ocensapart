@@ -1,4 +1,4 @@
-"""Oceans Apart application entry point.
+"""Oceans Apart: The Last Cure application entry point.
 
 Gameplay responsibilities live in the gameplay package. This module only
 initializes Pygame, runs the startup flow, and hands the resulting state to the
@@ -22,7 +22,7 @@ async def main():
         (display_info.current_w, display_info.current_h),
         pygame.NOFRAME,
     )
-    pygame.display.set_caption("Oceans Apart")
+    pygame.display.set_caption("Oceans Apart: The Last Cure")
     clock = pygame.time.Clock()
     startup = StartupFlow(screen)
 
@@ -30,17 +30,20 @@ async def main():
         clock.tick(FPS)
         for event in startup.controller_input.get_events():
             if event.type == pygame.QUIT:
+                startup.shutdown()
                 pygame.quit()
                 return
             if (
                 event.type == pygame.KEYDOWN
                 and event.key == pygame.K_ESCAPE
-                and startup.stage == "title"
+                and startup.stage in ("title", "setup")
             ):
+                startup.shutdown()
                 pygame.quit()
                 return
             startup.handle_event(event)
             if startup.quit_requested:
+                startup.shutdown()
                 pygame.quit()
                 return
 
@@ -61,6 +64,8 @@ async def main():
         startup.hud,
         startup.npc_manager,
         startup.loaded_save_data,
+        startup.game_state,
+        startup.selected_save_path,
     )
     pygame.quit()
 

@@ -10,7 +10,14 @@ from types import SimpleNamespace
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "code"))
 
-from gameplay.savegame import SAVE_VERSION, SaveGameManager, deserialize_chunk_states
+from gameplay.game_state import GameState
+from gameplay.savegame import (
+    SAVE_VERSION,
+    SaveGameManager,
+    _npc_key,
+    deserialize_chunk_states,
+    normalize_saved_player_health,
+)
 from inventory_item import Item
 from world.chunkmanager import Chunk
 from world.worldmanager import World
@@ -50,6 +57,12 @@ class SaveGameTests(unittest.TestCase):
         )
         return SimpleNamespace(time=game_time, seasons=seasons)
 
+    def test_legacy_health_cap_migrates_without_changing_health_percentage(self):
+        self.assertEqual(normalize_saved_player_health(4, 5), (80, 100))
+        self.assertEqual(normalize_saved_player_health(5, 5), (100, 100))
+        self.assertEqual(normalize_saved_player_health(0, 5), (0, 100))
+        self.assertEqual(normalize_saved_player_health(75, 100), (75, 100))
+
     def test_atomic_save_round_trips_chunk_mutations(self):
         chunk = Chunk((2, -1), (8, 8), 16)
         chunk.save_data["modified_tiles"][("soil", 3, 4)] = 1
@@ -75,12 +88,119 @@ class SaveGameTests(unittest.TestCase):
             self.assertIn("tree:gone", state["removed_props"])
             self.assertEqual(state["prop_states"]["tree:hurt"]["health"], 2)
 
+    def test_unnamed_saves_follow_numerical_order(self):
+        world = SimpleNamespace(loaded_chunks={})
+        world_run = SimpleNamespace(seed=12, current_index=1, discovered_islands={1})
+        with tempfile.TemporaryDirectory() as folder:
+            first = SaveGameManager(save_directory=folder)
+            first_path = first.save(
+                world_run, world, self.make_player(), self.make_weather(), None
+            )
+            second = SaveGameManager(save_directory=folder)
+            second_path = second.save(
+                world_run, world, self.make_player(), self.make_weather(), None
+            )
+
+            self.assertEqual(first_path.name, "save_1.json")
+            self.assertEqual(second_path.name, "save_2.json")
+            self.assertEqual({slot.name for slot in second.list_saves()}, {"save_1", "save_2"})
+
+    def test_custom_save_name_is_listed_and_loaded(self):
+        world = SimpleNamespace(loaded_chunks={})
+        world_run = SimpleNamespace(seed=88, current_index=1, discovered_islands={1})
+        with tempfile.TemporaryDirectory() as folder:
+            manager = SaveGameManager(save_directory=folder)
+            path = manager.save(
+                world_run,
+                world,
+                self.make_player(),
+                self.make_weather(),
+                None,
+                save_name="Akeem's Farm",
+            )
+
+            self.assertEqual(path.name, "Akeems_Farm.json")
+            slot = manager.list_saves()[0]
+            self.assertEqual(slot.name, "Akeem's Farm")
+            self.assertEqual(slot.seed, 88)
+            self.assertEqual(slot.day, 3)
+            self.assertEqual(manager.load(slot.path)["save"]["name"], "Akeem's Farm")
+
+    def test_editing_a_save_name_renames_the_current_slot(self):
+        world = SimpleNamespace(loaded_chunks={})
+        world_run = SimpleNamespace(seed=5, current_index=1, discovered_islands={1})
+        with tempfile.TemporaryDirectory() as folder:
+            manager = SaveGameManager(save_directory=folder)
+            old_path = manager.save(
+                world_run, world, self.make_player(), self.make_weather(), None
+            )
+            new_path = manager.save(
+                world_run,
+                world,
+                self.make_player(),
+                self.make_weather(),
+                None,
+                save_name="Farm Finale",
+            )
+
+            self.assertFalse(old_path.exists())
+            self.assertEqual(new_path.name, "Farm_Finale.json")
+            self.assertEqual([slot.name for slot in manager.list_saves()], ["Farm Finale"])
+
     def test_rejects_unknown_save_versions(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "slot.json"
             path.write_text('{"version": 999}', encoding="utf-8")
             with self.assertRaises(ValueError):
                 SaveGameManager(path).load()
+
+    def test_version_one_save_migrates_with_phase_one_defaults(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "slot.json"
+            path.write_text(
+                '{"version": 1, "world_run": {"seed": 4}, "player": {}}',
+                encoding="utf-8",
+            )
+
+            payload = SaveGameManager(path).load()
+            state = GameState.from_dict(payload["game_state"])
+
+            self.assertEqual(payload["version"], SAVE_VERSION)
+            self.assertEqual(state.progression.level, 1)
+            self.assertEqual(state.stamina, 100)
+            self.assertEqual(state.current_location_id, "player_farm")
+            self.assertEqual(state.relationships, {})
+
+    def test_version_two_save_round_trips_game_state(self):
+        chunk = Chunk((0, 0), (2, 2), 16)
+        world = SimpleNamespace(loaded_chunks={(0, 0): chunk})
+        world_run = SimpleNamespace(seed=5, current_index=1, discovered_islands={1})
+        state = GameState()
+        state.add_experience(135)
+        state.add_farming_points(12)
+        state.add_fishing_points(8)
+        state.add_trust("wife", 26)
+        state.flags["prologue.started"] = True
+        state.claim_event("progression", "harvest:1")
+
+        with tempfile.TemporaryDirectory() as folder:
+            manager = SaveGameManager(Path(folder) / "slot.json")
+            manager.save(
+                world_run,
+                world,
+                self.make_player(),
+                self.make_weather(),
+                None,
+                state,
+            )
+            restored = GameState.from_dict(manager.load()["game_state"])
+
+        self.assertEqual(restored.to_dict(), state.to_dict())
+
+    def test_story_npc_save_key_does_not_depend_on_list_position(self):
+        wife = SimpleNamespace(story_id="wife", save_id="story:wife")
+        self.assertEqual(_npc_key(wife, 0), "story:wife")
+        self.assertEqual(_npc_key(wife, 99), "story:wife")
 
     def test_json_coordinate_lists_restore_as_hashable_tuples(self):
         states = deserialize_chunk_states({

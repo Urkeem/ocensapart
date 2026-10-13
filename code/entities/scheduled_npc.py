@@ -6,6 +6,7 @@ import pygame
 
 from entities.npc import WanderingNPC
 from gameplay.goap import DailySchedule, GOAPAction, GOAPPlanner
+from data.crops import crop_definition, crop_seed_market_offers, is_crop_unlocked
 
 
 MARKET_OFFERS = {
@@ -94,6 +95,7 @@ class MerchantNPC(ScheduledNPC):
 
     def __init__(self, *args, stall, **kwargs):
         self.stall = stall
+        self.game_state = kwargs.pop("game_state", None)
         record = stall.record
         kwargs.setdefault("home_pos", record["rest_world_pos"])
         kwargs.setdefault("work_pos", record["merchant_world_pos"])
@@ -105,8 +107,29 @@ class MerchantNPC(ScheduledNPC):
             {"item": item, "price": price, "stock": 8}
             for item, price in MARKET_OFFERS[self.stall.stall_kind]
         ]
+        self.offers.extend(
+            {"item": crop_id, "price": price, "stock": 8, "seed": True}
+            for crop_id, price in crop_seed_market_offers(self.stall.stall_kind)
+        )
         self.stall.merchant = self
         self.dialogue_name = self.role.replace("_", " ").title()
+
+    def available_offers(self):
+        """Expose crop produce/seeds only after its farming milestone."""
+        existing_seed_ids = {
+            offer["item"] for offer in self.offers if offer.get("seed")
+        }
+        self.offers.extend(
+            {"item": crop_id, "price": price, "stock": 8, "seed": True}
+            for crop_id, price in crop_seed_market_offers(self.stall.stall_kind)
+            if crop_id not in existing_seed_ids
+        )
+        return [
+            offer
+            for offer in self.offers
+            if crop_definition(offer["item"]) is None
+            or is_crop_unlocked(offer["item"], self.game_state)
+        ]
 
     @property
     def is_available(self):
@@ -124,4 +147,3 @@ class MerchantNPC(ScheduledNPC):
         super().update(dt, game_time=game_time)
         if not self.is_alive:
             self.stall.set_open(False)
-

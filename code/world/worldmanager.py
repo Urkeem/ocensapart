@@ -1,13 +1,16 @@
 """World manager for island-level loading, biome data, and coordinate conversion."""
 
 from collections import deque
+from concurrent.futures import Future, ProcessPoolExecutor
 from dataclasses import dataclass
 import hashlib
 import math
+import os
 import random
 from world.chunkmanager import Chunk
 from world.cellular_automata import CellularAutomata
 from world.biome_visuals import SUBDIVIDED_GRASS_TILESET
+from data.story import KINGDOM_LOCATION_CHUNK_OFFSETS
 
 
 # Biome ids
@@ -26,6 +29,8 @@ ISLAND_SIZE_CHUNKS = 10
 ISLAND_LAND_RADIUS_CHUNKS = 4
 ISLAND_WATER_MARGIN_CHUNKS = 1
 ISLAND_RADIUS_CHUNKS = ISLAND_LAND_RADIUS_CHUNKS + ISLAND_WATER_MARGIN_CHUNKS
+KINGDOM_SIZE_CHUNKS = 25
+KINGDOM_LAND_RADIUS_CHUNKS = KINGDOM_SIZE_CHUNKS // 2 - 1
 UNDERWATER_BIOME_WIDTH = 5
 MOUNTAIN_EXPANSION_RADIUS = 2
 MOUNTAIN_BLOCK_SIZE = 2
@@ -87,6 +92,9 @@ GUARANTEED_BIOME_LAYOUT = (
     (BIOME_MOUNTAIN, 0.42, 0.67),
 )
 
+MAX_CHUNK_WORKERS = 8
+KINGDOM_ENVIRONMENT_PROPS_PER_CHUNK = 220
+
 
 def stable_seed(*parts: object) -> int:
     digest = hashlib.sha256("|".join(map(str, parts)).encode("utf-8")).hexdigest()
@@ -100,26 +108,59 @@ class IslandLevel:
     radius_chunks: int
     difficulty: int
     name: str
+    size_chunks: int = ISLAND_SIZE_CHUNKS
+    land_radius_chunks: int = ISLAND_LAND_RADIUS_CHUNKS
+    world_kind: str = "island"
+
+
+def generate_chunk_in_worker(
+    seed: int,
+    spawn_chunk: tuple[int, int],
+    chunk_size: tuple[int, int],
+    active_radius: int,
+    tile_size: int,
+    island: IslandLevel,
+    chunk_coord: tuple[int, int],
+    saved_state: dict | None,
+) -> Chunk:
+    """Generate data-only chunk state outside the rendering process."""
+    world = World(
+        seed=seed,
+        spawn_chunk=spawn_chunk,
+        chunk_size=chunk_size,
+        active_radius=active_radius,
+        tile_size=tile_size,
+        island=island,
+    )
+    if saved_state is not None:
+        world.saved_chunk_states[chunk_coord] = saved_state
+    return world._generate_chunk(chunk_coord)
 
 
 class WorldRun:
     """Tracks the island chain for one playthrough."""
 
-    def __init__(self, seed: int = 0, start_index: int = 1):
+    def __init__(self, seed: int = 0, start_index: int = 1, world_kind: str = "island"):
         self.seed = seed
         self.current_index = start_index
         self.discovered_islands: set[int] = set()
+        self.world_kind = "kingdom" if world_kind == "kingdom" else "island"
 
     def get_island(self, index: int | None = None) -> IslandLevel:
         island_index = self.current_index if index is None else index
-        island_seed = stable_seed(self.seed, "island", island_index) & 0xffffffff
-        radius_chunks = ISLAND_RADIUS_CHUNKS
+        seed_label = "kingdom" if self.world_kind == "kingdom" else "island"
+        island_seed = stable_seed(self.seed, seed_label, island_index) & 0xffffffff
+        is_kingdom = self.world_kind == "kingdom"
+        radius_chunks = KINGDOM_LAND_RADIUS_CHUNKS + 1 if is_kingdom else ISLAND_RADIUS_CHUNKS
         return IslandLevel(
             index=island_index,
             seed=island_seed,
             radius_chunks=radius_chunks,
             difficulty=max(1, island_index),
-            name=f"Island {island_index}",
+            name="Oceans Apart Kingdom" if is_kingdom else f"Island {island_index}",
+            size_chunks=KINGDOM_SIZE_CHUNKS if is_kingdom else ISLAND_SIZE_CHUNKS,
+            land_radius_chunks=KINGDOM_LAND_RADIUS_CHUNKS if is_kingdom else ISLAND_LAND_RADIUS_CHUNKS,
+            world_kind=self.world_kind,
         )
 
     def create_world(
@@ -173,11 +214,10 @@ class World:
         self.wall_chance = 0.54
         self.ca_cutoff = (3, 5)
         self.island_shoreline = 0.82
-        self.land_radius_chunks = min(
-            ISLAND_LAND_RADIUS_CHUNKS,
-            self.island.radius_chunks,
-        )
+        self.level_size_chunks = max(1, int(self.island.size_chunks))
+        self.land_radius_chunks = min(int(self.island.land_radius_chunks), self.island.radius_chunks)
         self.farmstead_chunks = self._choose_farmstead_chunks()
+        self.kingdom_site_chunks = self._build_kingdom_site_chunks()
         river_rng = random.Random(stable_seed(self.seed, "river", self.island.index))
         self.river_phase = river_rng.random() * math.tau
         river_candidates = [
@@ -196,6 +236,20 @@ class World:
         self.saved_chunk_states: dict[tuple[int, int], dict] = {}
         self.active_chunks: set[tuple[int, int]] = set()
         self.current_player_chunk: tuple[int, int] | None = None
+        self.stream_radius = self.active_radius + 1
+        self.target_loaded_chunks: set[tuple[int, int]] = set()
+        self.chunk_load_queue: deque[tuple[int, int]] = deque()
+        self.chunk_prewarm_queue: deque[tuple[int, int]] = deque()
+        self.streaming_priority_chunks: set[tuple[int, int]] = set()
+        self._queued_chunk_coords: set[tuple[int, int]] = set()
+        self._queued_prewarm_coords: set[tuple[int, int]] = set()
+        self._chunk_futures: dict[tuple[int, int], Future] = {}
+        self._chunk_executor: ProcessPoolExecutor | None = None
+        self._chunk_worker_count = max(
+            1,
+            min(MAX_CHUNK_WORKERS, max(1, (os.cpu_count() or 2) - 1)),
+        )
+        self._full_island_prepared = False
         self.exit_chunk = self._choose_exit_chunk()
         # Adjacent value-noise samples reuse the same grid corners thousands of
         # times. Cache the deterministic result without changing seed behavior.
@@ -209,8 +263,8 @@ class World:
 
     def _choose_exit_chunk(self) -> tuple[int, int]:
         rng = random.Random(stable_seed(self.seed, "exit", self.island.index))
-        low_offset = -(ISLAND_SIZE_CHUNKS // 2)
-        high_offset = low_offset + ISLAND_SIZE_CHUNKS - 1
+        low_offset = -(self.level_size_chunks // 2)
+        high_offset = low_offset + self.level_size_chunks - 1
         edge = rng.choice(("north", "south", "east", "west"))
         offset = rng.randint(-2, 2)
         if edge == "north":
@@ -243,17 +297,32 @@ class World:
             for offset_x, offset_y in selected_offsets
         )
 
+    def _build_kingdom_site_chunks(self) -> frozenset[tuple[int, int]]:
+        if self.island.world_kind != "kingdom":
+            return frozenset()
+        farm_chunk = min(
+            self.farmstead_chunks,
+            key=lambda coord: abs(coord[0] - self.spawn_chunk[0]) + abs(coord[1] - self.spawn_chunk[1]),
+        )
+        return frozenset({
+            farm_chunk,
+            *(
+                (farm_chunk[0] + offset_x, farm_chunk[1] + offset_y)
+                for offset_x, offset_y in KINGDOM_LOCATION_CHUNK_OFFSETS.values()
+            ),
+        })
+
     def is_chunk_in_level_bounds(self, chunk_coord: tuple[int, int]) -> bool:
         cx, cy = self.spawn_chunk
         x, y = chunk_coord
-        low_offset = -(ISLAND_SIZE_CHUNKS // 2)
-        high_offset = low_offset + ISLAND_SIZE_CHUNKS
+        low_offset = -(self.level_size_chunks // 2)
+        high_offset = low_offset + self.level_size_chunks
         return low_offset <= x - cx < high_offset and low_offset <= y - cy < high_offset
 
     def get_level_chunk_coords(self) -> set[tuple[int, int]]:
         cx, cy = self.spawn_chunk
-        low_offset = -(ISLAND_SIZE_CHUNKS // 2)
-        high_offset = low_offset + ISLAND_SIZE_CHUNKS
+        low_offset = -(self.level_size_chunks // 2)
+        high_offset = low_offset + self.level_size_chunks
         return {
             (cx + dx, cy + dy)
             for dy in range(low_offset, high_offset)
@@ -535,6 +604,18 @@ class World:
                 return True
         return False
 
+    def _is_kingdom_site_core_tile(self, world_x: int, world_y: int) -> bool:
+        if not self.kingdom_site_chunks:
+            return False
+        chunk_width, chunk_height = self.chunk_size
+        core_radius = max(8, min(chunk_width, chunk_height) // 3)
+        for chunk_x, chunk_y in self.kingdom_site_chunks:
+            center_x = chunk_x * chunk_width + chunk_width // 2
+            center_y = chunk_y * chunk_height + chunk_height // 2
+            if abs(world_x - center_x) <= core_radius and abs(world_y - center_y) <= core_radius:
+                return True
+        return False
+
     def _island_edge_noise(self, world_x: int, world_y: int) -> float:
         broad = self._world_field_random(301, world_x // 10, world_y // 10)
         detail = self._world_field_random(302, world_x // 4, world_y // 4)
@@ -547,7 +628,11 @@ class World:
         return abs(world_x - center_x) <= 3 and abs(world_y - center_y) <= 3
 
     def _sample_island_land(self, world_x: int, world_y: int, wall_chance: float) -> int:
-        if self._is_spawn_core_tile(world_x, world_y) or self._is_farmstead_core_tile(world_x, world_y):
+        if (
+            self._is_spawn_core_tile(world_x, world_y)
+            or self._is_farmstead_core_tile(world_x, world_y)
+            or self._is_kingdom_site_core_tile(world_x, world_y)
+        ):
             return 1
         if self.is_river_tile(world_x, world_y):
             return 0
@@ -676,7 +761,11 @@ class World:
                 world_y = start_world_y + local_y
                 distance = self._sample_island_distance(world_x, world_y)
                 guaranteed_biome = self._guaranteed_biome_at(world_x, world_y)
-                if self._is_spawn_core_tile(world_x, world_y) or self._is_farmstead_core_tile(world_x, world_y):
+                if (
+                    self._is_spawn_core_tile(world_x, world_y)
+                    or self._is_farmstead_core_tile(world_x, world_y)
+                    or self._is_kingdom_site_core_tile(world_x, world_y)
+                ):
                     masked[local_y * width + local_x] = 1
                 elif self.is_river_tile(world_x, world_y):
                     masked[local_y * width + local_x] = 0
@@ -1020,6 +1109,7 @@ class World:
             chunk_size=self.chunk_size,
             tile_size=self.tile_size
         )
+        chunk.metadata["danger"] = max(1, int(self.island.difficulty))
 
         chunk_w, chunk_h = self.chunk_size
         pad = self.ca_steps + 1
@@ -1109,7 +1199,37 @@ class World:
             world_seed=self.seed,
             biome_name_resolver=lambda biome_id: BIOME_TABLE[biome_id]["name"],
         )
-        chunk.generate_environment_props(world_seed=self.seed)
+        chunk.generate_environment_props(
+            world_seed=self.seed,
+            max_props=(
+                KINGDOM_ENVIRONMENT_PROPS_PER_CHUNK
+                if self.island.world_kind == "kingdom"
+                else 180
+            ),
+        )
+
+        if chunk_coord in self.kingdom_site_chunks and chunk_coord not in self.farmstead_chunks:
+            # Leave a buildable, walkable square for each authored residence.
+            # The location layer adds the actual house at the chunk centre.
+            center_x, center_y = chunk.chunk_size[0] // 2, chunk.chunk_size[1] // 2
+            clear_radius = max(8, min(chunk.chunk_size) // 3)
+            kept_props = []
+            for prop in chunk.props:
+                local_tile = prop.get("local_tile") if isinstance(prop, dict) else None
+                natural = isinstance(prop, dict) and prop.get("type") in {"tree", "environment"}
+                inside_site = local_tile is not None and (
+                    abs(local_tile[0] - center_x) <= clear_radius
+                    and abs(local_tile[1] - center_y) <= clear_radius
+                )
+                if not (natural and inside_site and not prop.get("scene_id")):
+                    kept_props.append(prop)
+                    continue
+                idx = chunk.get_index(*local_tile)
+                decoration = chunk.layers["decoration"][idx]
+                if isinstance(decoration, dict) and decoration.get("id") == prop.get("id"):
+                    chunk.layers["decoration"][idx] = None
+                    chunk.layers["collision"][idx] = 0
+            chunk.props = kept_props
 
 
         self.apply_chunk_save_data(chunk)
@@ -1121,13 +1241,33 @@ class World:
 
         return chunk
 
-    def _install_generated_chunk(self, chunk_coord: tuple[int, int], chunk: Chunk) -> Chunk:
+    def _install_generated_chunk(
+        self,
+        chunk_coord: tuple[int, int],
+        chunk: Chunk,
+        *,
+        preserve_neighbor_surfaces: bool = False,
+    ) -> Chunk:
         existing = self.loaded_chunks.get(chunk_coord)
         if existing is not None:
             return existing
 
+        preserved_surfaces = {}
+        if preserve_neighbor_surfaces:
+            cx, cy = chunk_coord
+            for dy in (-1, 0, 1):
+                for dx in (-1, 0, 1):
+                    neighbor_coord = (cx + dx, cy + dy)
+                    neighbor = self.loaded_chunks.get(neighbor_coord)
+                    if neighbor is not None and neighbor.runtime.get("surface") is not None:
+                        preserved_surfaces[neighbor_coord] = neighbor.runtime["surface"]
         self.loaded_chunks[chunk_coord] = chunk
         self.invalidate_chunk_and_neighbors(chunk_coord)
+        for neighbor_coord, surface in preserved_surfaces.items():
+            neighbor = self.loaded_chunks.get(neighbor_coord)
+            if neighbor is not None:
+                neighbor.runtime["surface"] = surface
+                neighbor.runtime["surface_stale"] = True
         return chunk
 
     def load_chunk(self, chunk_coord: tuple[int, int]) -> Chunk:
@@ -1185,13 +1325,246 @@ class World:
             chunk = self.loaded_chunks[coord]
             if prewarm_chunk_callback is not None:
                 prewarm_chunk_callback(chunk)
+        self._full_island_prepared = True
+
+    def _stream_priority(
+        self,
+        coord: tuple[int, int],
+        center_chunk: tuple[int, int],
+        movement_direction=None,
+    ) -> tuple[float, int, int]:
+        dx = coord[0] - center_chunk[0]
+        dy = coord[1] - center_chunk[1]
+        distance = abs(dx) + abs(dy)
+        direction_bias = 0.0
+        if movement_direction is not None:
+            move_x = float(
+                movement_direction.x
+                if hasattr(movement_direction, "x")
+                else movement_direction[0]
+            )
+            move_y = float(
+                movement_direction.y
+                if hasattr(movement_direction, "y")
+                else movement_direction[1]
+            )
+            direction_bias = -(dx * move_x + dy * move_y) * 0.25
+        return distance + direction_bias, coord[1], coord[0]
+
+    def queue_chunks_around(
+        self,
+        center_chunk: tuple[int, int],
+        movement_direction=None,
+    ) -> None:
+        """Prioritize nearby data generation without blocking the frame loop."""
+        self.current_player_chunk = center_chunk
+        self.active_chunks = self.get_chunks_near(center_chunk, self.active_radius)
+        self.target_loaded_chunks = self.get_chunks_near(center_chunk, self.stream_radius)
+
+        for coord, chunk in self.loaded_chunks.items():
+            chunk.set_active(coord in self.active_chunks)
+
+        retained = [
+            coord
+            for coord in self.chunk_load_queue
+            if coord in self.target_loaded_chunks
+        ]
+        self.chunk_load_queue.clear()
+        self._queued_chunk_coords.clear()
+
+        missing = [
+            coord
+            for coord in self.target_loaded_chunks
+            if coord not in self.loaded_chunks
+            and coord not in self._chunk_futures
+            and coord not in retained
+        ]
+        ordered = sorted(
+            (*retained, *missing),
+            key=lambda coord: self._stream_priority(
+                coord,
+                center_chunk,
+                movement_direction,
+            ),
+        )
+        self.chunk_load_queue.extend(ordered)
+        self._queued_chunk_coords.update(ordered)
+
+    def start_chunk_streaming(
+        self,
+        center_chunk: tuple[int, int] | None = None,
+        movement_direction=None,
+    ) -> None:
+        """Start a bounded worker pool for procedural chunk generation."""
+        if self._chunk_executor is None:
+            self._chunk_executor = ProcessPoolExecutor(
+                max_workers=self._chunk_worker_count,
+            )
+        self.queue_chunks_around(
+            center_chunk or self.current_player_chunk or self.spawn_chunk,
+            movement_direction,
+        )
+        self._submit_chunk_jobs()
+
+    def _submit_chunk_jobs(self) -> None:
+        if self._chunk_executor is None:
+            return
+        while (
+            self.chunk_load_queue
+            and len(self._chunk_futures) < self._chunk_worker_count
+        ):
+            coord = self.chunk_load_queue.popleft()
+            self._queued_chunk_coords.discard(coord)
+            if coord in self.loaded_chunks or coord in self._chunk_futures:
+                continue
+            future = self._chunk_executor.submit(
+                generate_chunk_in_worker,
+                self.seed,
+                self.spawn_chunk,
+                self.chunk_size,
+                self.active_radius,
+                self.tile_size,
+                self.island,
+                coord,
+                self.saved_chunk_states.get(coord),
+            )
+            self._chunk_futures[coord] = future
+
+    def _queue_chunk_prewarm(self, coord: tuple[int, int]) -> None:
+        if coord in self._queued_prewarm_coords or coord not in self.loaded_chunks:
+            return
+        runtime = self.loaded_chunks[coord].runtime
+        if runtime.get("prewarm_complete", False):
+            runtime["prewarm_phase"] = 4
+        runtime["prewarm_complete"] = False
+        self.chunk_prewarm_queue.append(coord)
+        self._queued_prewarm_coords.add(coord)
+
+    def prepare_loaded_chunks_incrementally(
+        self,
+        chunk_coords: set[tuple[int, int]],
+    ) -> None:
+        self.streaming_priority_chunks = set(chunk_coords)
+        for coord in chunk_coords:
+            chunk = self.load_chunk(coord)
+            chunk.set_active(coord in self.active_chunks)
+            self._queue_chunk_prewarm(coord)
+
+    def _prewarm_neighbors_ready(self, coord: tuple[int, int]) -> bool:
+        cx, cy = coord
+        required_coords = (
+            self.streaming_priority_chunks
+            if coord in self.streaming_priority_chunks
+            else self.active_chunks
+            if coord in self.active_chunks
+            else self.target_loaded_chunks
+        )
+        return all(
+            neighbor in self.loaded_chunks
+            for dy in (-1, 0, 1)
+            for dx in (-1, 0, 1)
+            if (neighbor := (cx + dx, cy + dy)) in required_coords
+        )
+
+    def process_chunk_streaming(
+        self,
+        prewarm_chunk_callback=None,
+        *,
+        max_installs: int = 2,
+        max_prewarm_steps: int = 1,
+    ) -> None:
+        """Install worker results and advance render prewarming incrementally."""
+        completed = [
+            (coord, future)
+            for coord, future in self._chunk_futures.items()
+            if future.done()
+        ]
+        completed.sort(
+            key=lambda item: self._stream_priority(
+                item[0],
+                self.current_player_chunk or self.spawn_chunk,
+            )
+        )
+        for coord, future in completed[:max_installs]:
+            del self._chunk_futures[coord]
+            chunk = future.result()
+            self._install_generated_chunk(
+                coord,
+                chunk,
+                preserve_neighbor_surfaces=True,
+            )
+            chunk.set_active(coord in self.active_chunks)
+            cx, cy = coord
+            for dy in (-1, 0, 1):
+                for dx in (-1, 0, 1):
+                    self._queue_chunk_prewarm((cx + dx, cy + dy))
+
+        self._submit_chunk_jobs()
+
+        if prewarm_chunk_callback is None:
+            return
+        steps = 0
+        attempts = len(self.chunk_prewarm_queue)
+        while self.chunk_prewarm_queue and steps < max_prewarm_steps and attempts > 0:
+            attempts -= 1
+            coord = self.chunk_prewarm_queue.popleft()
+            self._queued_prewarm_coords.discard(coord)
+            chunk = self.loaded_chunks.get(coord)
+            if chunk is None:
+                continue
+            if not self._prewarm_neighbors_ready(coord):
+                self._queue_chunk_prewarm(coord)
+                continue
+            complete = prewarm_chunk_callback(chunk)
+            steps += 1
+            if complete is False:
+                self._queue_chunk_prewarm(coord)
+            else:
+                chunk.runtime["prewarm_complete"] = True
+
+    def is_streaming_area_ready(
+        self,
+        chunk_coords: set[tuple[int, int]] | None = None,
+    ) -> bool:
+        coords = self.active_chunks if chunk_coords is None else chunk_coords
+        return bool(coords) and all(
+            coord in self.loaded_chunks
+            and self.loaded_chunks[coord].runtime.get("prewarm_complete", False)
+            for coord in coords
+        )
+
+    def get_streaming_progress(
+        self,
+        chunk_coords: set[tuple[int, int]] | None = None,
+    ) -> tuple[int, int]:
+        coords = self.active_chunks if chunk_coords is None else chunk_coords
+        completed = sum(
+            coord in self.loaded_chunks
+            and self.loaded_chunks[coord].runtime.get("prewarm_complete", False)
+            for coord in coords
+        )
+        return completed, len(coords)
+
+    def shutdown_chunk_streaming(self) -> None:
+        if self._chunk_executor is not None:
+            self._chunk_executor.shutdown(wait=False, cancel_futures=True)
+            self._chunk_executor = None
+        self._chunk_futures.clear()
+        self.chunk_load_queue.clear()
+        self._queued_chunk_coords.clear()
 
     def update_active_chunks(
         self,
         player_world_pos: tuple[int, int],
         movement_direction=None,
     ) -> None:
-        self.current_player_chunk = self.world_to_chunk(player_world_pos)
+        player_chunk = self.world_to_chunk(player_world_pos)
+        if self._full_island_prepared:
+            self.current_player_chunk = player_chunk
+            return
+        if player_chunk != self.current_player_chunk or not self.active_chunks:
+            self.queue_chunks_around(player_chunk, movement_direction)
+            self._submit_chunk_jobs()
 
     def get_world_terrain_tile(self, world_x: int, world_y: int) -> int:
         chunk_w, chunk_h = self.chunk_size

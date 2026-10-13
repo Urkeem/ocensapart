@@ -11,6 +11,7 @@ import pygame
 from math import sin
 
 from assets import LoadAssets, get_shared_assets
+from data.items import PALM_TREE_FRUITS, TEMPERATE_TREE_FRUITS, TROPICAL_TREE_FRUITS
 from inventory_item import Item
 from sprites import AnimatedWorldObject, WorldObject
 from core.support import import_file, rp
@@ -259,11 +260,8 @@ class FruitPickupParticle(WorldObject):
 class Tree(AnimatedWorldObject):
     SORT_Y_OFFSET = 8
 
-    FRUITS = [
-        "Golden Apple", "Green Apple", "Red Apple", "Orange", "Green Fig",
-        "Purple Fig", "Black Grapes", "Green Grapes", "Purple Grapes", "Yellow Grapes",
-    ]
-    TROPICAL_FRUITS = ["Cocoa Beans", "Avocado", "Mango", "Melon", "Pear"]
+    FRUITS = [display_name for _item_id, display_name, _stamina in TEMPERATE_TREE_FRUITS]
+    TROPICAL_FRUITS = [display_name for _item_id, display_name, _stamina in TROPICAL_TREE_FRUITS]
 
     def __init__(
         self,
@@ -439,7 +437,7 @@ class Tree(AnimatedWorldObject):
             return ("", 0)
 
         if profile.species == "palm":
-            return ("Coconut", self.fruit_rng.randint(1, 3))
+            return (PALM_TREE_FRUITS[0][1], self.fruit_rng.randint(1, 3))
         if profile.species in {"oak", "birch", "fruit", "tropicfruit", "apple", "peach", "cherry"}:
             return (
                 self.FRUITS[self.fruit_rng.randint(0, len(self.FRUITS) - 1)],

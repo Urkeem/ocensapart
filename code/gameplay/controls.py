@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pygame
 from pygame._sdl2 import controller as sdl_controller
+from pygame._sdl2.sdl2 import error as SDL2Error
 
 
 CONTROLLER_DEADZONE = 0.20
@@ -20,10 +21,15 @@ BUTTON_SPECIAL = pygame.CONTROLLER_BUTTON_Y
 BUTTON_GUARD = pygame.CONTROLLER_BUTTON_A
 BUTTON_DODGE = pygame.CONTROLLER_BUTTON_B
 AXIS_INVENTORY = pygame.CONTROLLER_AXIS_TRIGGERRIGHT
+AXIS_HOTBAR = pygame.CONTROLLER_AXIS_TRIGGERLEFT
 BUTTON_DPAD_UP = pygame.CONTROLLER_BUTTON_DPAD_UP
 BUTTON_DPAD_DOWN = pygame.CONTROLLER_BUTTON_DPAD_DOWN
 BUTTON_DPAD_LEFT = pygame.CONTROLLER_BUTTON_DPAD_LEFT
 BUTTON_DPAD_RIGHT = pygame.CONTROLLER_BUTTON_DPAD_RIGHT
+BUTTON_JOURNAL = pygame.CONTROLLER_BUTTON_BACK
+# Eating is contextual: Square consumes the focused food in the inventory or
+# the active food in the hotbar.  Otherwise Square keeps its tool/attack role.
+BUTTON_CONSUME = BUTTON_TOOL
 
 
 class ControllerInput:
@@ -33,6 +39,7 @@ class ControllerInput:
         self.deadzone = max(0.0, min(0.95, float(deadzone)))
         self.controller = None
         self._menu_axis_state = {"x": 0, "y": 0}
+        self._selection_axis_state = {"x": 0, "y": 0}
         self._trigger_axis_state = {}
         sdl_controller.init()
         self.refresh()
@@ -43,7 +50,7 @@ class ControllerInput:
             return False
         try:
             return bool(self.controller.attached())
-        except (pygame.error, KeyError, SystemError):
+        except (pygame.error, SDL2Error, KeyError, SystemError):
             self.controller = None
             return False
 
@@ -53,7 +60,7 @@ class ControllerInput:
             return ""
         try:
             return self.controller.name
-        except (pygame.error, KeyError, SystemError):
+        except (pygame.error, SDL2Error, KeyError, SystemError):
             self.close()
             return ""
 
@@ -61,7 +68,7 @@ class ControllerInput:
         if self.controller is not None:
             try:
                 self.controller.quit()
-            except (pygame.error, KeyError, SystemError):
+            except (pygame.error, SDL2Error, KeyError, SystemError):
                 pass
         self.controller = None
         trigger_states = getattr(self, "_trigger_axis_state", None)
@@ -93,7 +100,7 @@ class ControllerInput:
             try:
                 self.controller = sdl_controller.Controller(device_index)
                 return
-            except (pygame.error, KeyError, SystemError):
+            except (pygame.error, SDL2Error, KeyError, SystemError):
                 self.controller = None
 
     def handle_event(self, event):
@@ -104,7 +111,7 @@ class ControllerInput:
                 removed_id = getattr(event, "instance_id", None)
                 try:
                     current_id = self.controller.id
-                except (pygame.error, KeyError, SystemError):
+                except (pygame.error, SDL2Error, KeyError, SystemError):
                     current_id = None
                 if removed_id is None or current_id is None or removed_id == current_id:
                     self.close()
@@ -136,6 +143,25 @@ class ControllerInput:
             return None
         return negative_button if direction < 0 else positive_button
 
+    def selection_navigation_button(self, event):
+        """Convert the right stick into a one-step equipment selection press."""
+        if event.type != pygame.CONTROLLERAXISMOTION:
+            return None
+        axis = getattr(event, "axis", None)
+        if axis == pygame.CONTROLLER_AXIS_RIGHTX:
+            axis_name, negative_button, positive_button = "x", BUTTON_DPAD_LEFT, BUTTON_DPAD_RIGHT
+        elif axis == pygame.CONTROLLER_AXIS_RIGHTY:
+            axis_name, negative_button, positive_button = "y", BUTTON_DPAD_UP, BUTTON_DPAD_DOWN
+        else:
+            return None
+        value = getattr(event, "value", 0) / 32767.0
+        direction = -1 if value < -0.65 else 1 if value > 0.65 else 0
+        previous = self._selection_axis_state[axis_name]
+        self._selection_axis_state[axis_name] = direction
+        if direction == 0 or direction == previous:
+            return None
+        return negative_button if direction < 0 else positive_button
+
     def is_axis_pressed(self, event, axis, threshold=0.55):
         """Return once when an analog trigger crosses its press threshold."""
         if (
@@ -160,7 +186,7 @@ class ControllerInput:
             return False
         try:
             return bool(self.controller.get_button(button))
-        except (pygame.error, KeyError, SystemError):
+        except (pygame.error, SDL2Error, KeyError, SystemError):
             self.close()
             return False
 
@@ -169,21 +195,14 @@ class ControllerInput:
             return 0.0
         try:
             value = self.controller.get_axis(axis)
-        except (pygame.error, KeyError, SystemError):
+        except (pygame.error, SDL2Error, KeyError, SystemError):
             self.close()
             return 0.0
         return max(-1.0, min(1.0, value / 32767.0))
 
     def movement_vector(self):
-        dpad = pygame.Vector2(
-            int(self.get_button(BUTTON_DPAD_RIGHT))
-            - int(self.get_button(BUTTON_DPAD_LEFT)),
-            int(self.get_button(BUTTON_DPAD_DOWN))
-            - int(self.get_button(BUTTON_DPAD_UP)),
-        )
-        if dpad.length_squared() > 0:
-            return dpad.normalize()
-
+        # The D-pad belongs to the focused seed/tool/weapon selector during
+        # gameplay. Movement remains on the left stick.
         movement = pygame.Vector2(
             self.get_axis(pygame.CONTROLLER_AXIS_LEFTX),
             self.get_axis(pygame.CONTROLLER_AXIS_LEFTY),

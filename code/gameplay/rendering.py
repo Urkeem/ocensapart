@@ -124,6 +124,7 @@ def draw_world(
     soil_layer=None,
     npc_manager=None,
     effects_manager=None,
+    extra_objects=(),
 ):
     # Draw the world
     screen.fill(BACKGROUND_COLOR)
@@ -138,25 +139,21 @@ def draw_world(
         int(screen.get_height() / camera.zoom) + 1,
     )
 
-    for chunk_coord in world.loaded_chunks:
-        chunk = world.loaded_chunks.get(chunk_coord)
-        if chunk is None:
-            continue
-        chunk_left, chunk_top, _, _ = chunk.get_world_bounds()
-        chunk_w, chunk_h = chunk.chunk_size
-        tile_size = chunk.tile_size
-        chunk_right = chunk_left + chunk_w * tile_size
-        chunk_bottom = chunk_top + chunk_h * tile_size
+    chunk_pixel_w = world.chunk_size[0] * world.tile_size
+    chunk_pixel_h = world.chunk_size[1] * world.tile_size
+    min_chunk_x = world_view_rect.left // chunk_pixel_w
+    max_chunk_x = (world_view_rect.right - 1) // chunk_pixel_w
+    min_chunk_y = world_view_rect.top // chunk_pixel_h
+    max_chunk_y = (world_view_rect.bottom - 1) // chunk_pixel_h
 
-        if (
-            chunk_right <= world_view_rect.left
-            or chunk_left >= world_view_rect.right
-            or chunk_bottom <= world_view_rect.top
-            or chunk_top >= world_view_rect.bottom
-        ):
-            continue
-
-        visible_chunks.append((chunk_coord, chunk, chunk_left, chunk_top))
+    for chunk_y in range(min_chunk_y, max_chunk_y + 1):
+        for chunk_x in range(min_chunk_x, max_chunk_x + 1):
+            chunk_coord = (chunk_x, chunk_y)
+            chunk = world.loaded_chunks.get(chunk_coord)
+            if chunk is None:
+                continue
+            chunk_left, chunk_top, _, _ = chunk.get_world_bounds()
+            visible_chunks.append((chunk_coord, chunk, chunk_left, chunk_top))
 
     visible_chunks.sort(key=lambda item: (item[0][1], item[0][0]))
     update_view_rect = world_view_rect.inflate(world.tile_size * 4, world.tile_size * 4)
@@ -214,6 +211,7 @@ def draw_world(
         soil_layer,
         npc_manager,
         objects_by_chunk=objects_by_chunk,
+        extra_objects=extra_objects,
     )
     visible_y_objects = (obj for obj in y_objects if obj.rect.colliderect(update_view_rect))
     for obj in sorted(visible_y_objects, key=lambda s: getattr(s, "sort_y", s.rect.bottom)):

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pygame
 
+from data.locations import LOCATION_DEFINITIONS
 from gameplay.controls import BUTTON_ATTACK, BUTTON_DODGE, BUTTON_GUARD, BUTTON_SPECIAL
 
 
@@ -36,10 +37,26 @@ class CombatSystem:
     def _living_npcs(self):
         if self.npc_manager is None:
             return ()
+        location_id = getattr(
+            getattr(self.player, "game_state", None),
+            "current_location_id",
+            None,
+        )
+
+        def shares_runtime(npc):
+            npc_location = getattr(npc, "location_id", "player_farm")
+            if location_id is None or npc_location == location_id:
+                return True
+            npc_runtime = LOCATION_DEFINITIONS.get(npc_location, {}).get("runtime", "world")
+            player_runtime = LOCATION_DEFINITIONS.get(location_id, {}).get("runtime", "world")
+            return npc_runtime == "world" and player_runtime == "world"
+
         return tuple(
             npc
             for npc in self.npc_manager.npcs
             if getattr(npc, "is_alive", True)
+            and getattr(npc, "can_take_damage", True)
+            and shares_runtime(npc)
         )
 
     def _in_front_of_player(self, target):
@@ -67,9 +84,17 @@ class CombatSystem:
     def melee_attack(self, action=None, damage=1):
         if not self.player.begin_combat_action(action or "sword_slash1", 0.42):
             return False
+        self.player.wear_tool(getattr(self.player, "selected_weapon", self.player.selected_tool))
         targets = [target for target in self._living_npcs() if self._in_front_of_player(target)]
         if not targets:
             return True
+        hostile_targets = [
+            target
+            for target in targets
+            if getattr(target, "is_enemy", False) or getattr(target, "hostile", False)
+        ]
+        if hostile_targets:
+            targets = hostile_targets
         origin = pygame.Vector2(self.player.feet_collision_box.center)
         target = min(
             targets,
@@ -106,7 +131,9 @@ class CombatSystem:
         return False
 
     def dodge(self):
-        weapon = getattr(self.player, "selected_tool", "")
+        if getattr(self.player, "selected_selection_slot", "weapon") != "weapon":
+            return False
+        weapon = getattr(self.player, "selected_weapon", getattr(self.player, "selected_tool", ""))
         if weapon not in {"sword", "spear", "shield"}:
             return False
         action = "spear_dodge" if weapon == "spear" else "sword_dodge"
@@ -133,6 +160,7 @@ class CombatSystem:
         if not targets or not self.player.begin_combat_action("sword_thrust", 0.55):
             return False
 
+        self.player.wear_tool("sword")
         self.effects.spawn("comet", origin)
         for target in targets:
             if target.take_damage(2, effects=self.effects, source=self.player):
@@ -150,7 +178,7 @@ class CombatSystem:
                 return self.shield_bash()
             if event.key == pygame.K_r:
                 return self.comet_attack()
-            if event.key == pygame.K_h:
+            if event.key == pygame.K_x:
                 return self.dodge()
         if event.type == pygame.CONTROLLERBUTTONDOWN:
             if event.button == BUTTON_ATTACK:

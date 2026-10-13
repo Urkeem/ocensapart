@@ -22,7 +22,7 @@ DOOR_SOURCE_RECT = pygame.Rect(31, 92, 36, 36)
 
 HOUSE_CATEGORY_NAMES = ("primary", "secondary", "tertiary")
 
-_HOUSE_IMAGE_CACHE: dict[str, pygame.Surface] = {}
+_HOUSE_IMAGE_CACHE: dict[tuple[str, float], pygame.Surface] = {}
 _HOUSE_SIZE_CACHE: dict[str, tuple[int, int]] = {}
 
 
@@ -103,13 +103,16 @@ def get_house_door_rect(asset_name: str, scale: float | None = None) -> pygame.R
     return mapped
 
 
-def get_house_image(asset_name: str) -> pygame.Surface:
-    cached = _HOUSE_IMAGE_CACHE.get(asset_name)
+def get_house_image(asset_name: str, scale: float | None = None) -> pygame.Surface:
+    if scale is None:
+        scale = get_house_asset_scale(asset_name)
+    scale = float(scale)
+    cache_key = (asset_name, scale)
+    cached = _HOUSE_IMAGE_CACHE.get(cache_key)
     if cached is not None:
         return cached
 
     image = import_file("graphics", "houses", *asset_name.split("/"))
-    scale = get_house_asset_scale(asset_name)
     if scale != 1:
         width, height = image.get_size()
         image = pygame.transform.scale(
@@ -117,7 +120,7 @@ def get_house_image(asset_name: str) -> pygame.Surface:
             (round(width * scale), round(height * scale)),
         )
     image = image.convert_alpha()
-    _HOUSE_IMAGE_CACHE[asset_name] = image
+    _HOUSE_IMAGE_CACHE[cache_key] = image
     return image
 
 
@@ -155,7 +158,8 @@ class House(WorldObject):
         self.record = house_record
         self.asset_name = house_record["asset"]
         self.top_left = tuple(house_record["world_pos"])
-        image = get_house_image(self.asset_name)
+        scale = float(house_record.get("scale", get_house_asset_scale(self.asset_name)))
+        image = get_house_image(self.asset_name, scale)
 
         super().__init__(self.top_left, image, anchor="topleft")
         self.name = "house"
@@ -164,7 +168,6 @@ class House(WorldObject):
         self.footprint = tuple(house_record["footprint"])
         self.door = Door(self)
         self.door_tile = house_record["door_tile"]
-        scale = float(house_record.get("scale", get_house_asset_scale(self.asset_name)))
         self.collision_box = pygame.Rect(0, 0, int(self.rect.width * 0.68), int(self.rect.height * 0.22))
         self.collision_box.midbottom = (
             self.rect.centerx,

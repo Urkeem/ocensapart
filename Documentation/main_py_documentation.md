@@ -236,18 +236,23 @@ mask changed from `214` (no east neighbor) to `255` (fully connected) after the
 neighbor loaded, and that the cached tile map was replaced while the old final
 surface remained available during rebuilding.
 
-### Full-island startup prewarm
+### Viewport-first startup streaming
 
-Startup and later island transitions now request the complete island for
-generation and prewarming while leaving only the nearby 3x3 window active for
-updates and drawing. This shifts the cost into the loading screen instead of
-briefly freezing gameplay as the player approaches an unprepared chunk.
+Startup and later island transitions now generate and prewarm only the chunks
+intersecting the landing viewport. This keeps cold startup below the 15-second
+target instead of blocking on the complete 10x10 island.
 
-The seed-0 headless verification generated and fully prewarmed all 25 chunks in
-34.74 seconds after asset initialization. Moving the test position into the
-next chunk changed the active window but left both work queues empty. Set
-`gameplay.config.PREWARM_FULL_ISLAND` to `False` to restore incremental
-streaming on lower-memory systems.
+After landing, a bounded process pool generates the surrounding two-chunk
+buffer without blocking the display loop. Pygame surface and runtime-object
+work remains on the main process and advances through eight small phases so SDL
+resources are never shared unsafely between workers. Active simulation stays
+limited to the nearby 3x3 window, and movement direction prioritizes chunks in
+front of the player.
+
+In the seed-0, 1280x720 cold benchmark used for this change, shared assets plus
+two fully rendered landing chunks were ready in 12.91 seconds. The former
+synchronous 3x3 data-generation step alone took 13.26 seconds before asset and
+surface initialization.
 
 ### Procedural beach docks
 

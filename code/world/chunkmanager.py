@@ -11,6 +11,8 @@ from world.ecology import generate_tree_instance
 from world.fence import FENCE_GATE, FENCE_SEGMENT
 from world.biome_visuals import is_grass_patch_tile, is_weed_patch_tile
 from entities.environment_prop import list_environment_assets
+from data.content_manifest import ORE_ASSETS, ROCK_ASSETS
+from gameplay.resources import deterministic_ore_id
 from entities.house import (
     HOUSE_SOURCE_SIZE,
     choose_house_asset_from_category,
@@ -513,6 +515,8 @@ class Chunk:
                 if self.layers["collision"][idx] != 0:
                     return False
                 if self.layers["decoration"][idx] is not None:
+                    return False
+                if self.layers["soil"][idx] != 0:
                     return False
         return True
 
@@ -1597,11 +1601,12 @@ class Chunk:
         world_tile_x, world_tile_y = self.get_world_tile(local_x, local_y)
         world_x = world_tile_x * self.tile_size
         world_y = world_tile_y * self.tile_size
-        render_w, render_h = get_house_render_size(asset)
-        door_rect = tuple(get_house_door_rect(asset))
+        scale = get_house_asset_scale(asset)
+        render_w, render_h = get_house_render_size(asset, scale)
+        door_rect = tuple(get_house_door_rect(asset, scale))
         door_world_x = world_x + door_rect[0] + door_rect[2] // 2
         door_world_y = world_y + door_rect[1] + door_rect[3]
-        footprint = get_house_footprint_tiles(asset, self.tile_size)
+        footprint = get_house_footprint_tiles(asset, self.tile_size, scale)
         return {
             "type": "house",
             "id": f"{scene_id}:house:{index}",
@@ -1616,7 +1621,7 @@ class Chunk:
             "world_pos": (world_x, world_y),
             "source_size": HOUSE_SOURCE_SIZE,
             "render_size": (render_w, render_h),
-            "scale": get_house_asset_scale(asset),
+            "scale": scale,
             "footprint": footprint,
             "door_rect": door_rect,
             "door_tile": (
@@ -1795,6 +1800,7 @@ class Chunk:
             for house_index, house in enumerate(template.get("houses", [])):
                 category = house.get("category", "primary")
                 asset = self._choose_scene_house_asset(rng, category, house.get("prefer"))
+                role = house.get("role", category)
                 footprint_w, footprint_h = get_house_footprint_tiles(asset, self.tile_size)
                 preferred_x = local_x + house["offset"][0]
                 preferred_y = local_y + house["offset"][1]
@@ -1824,7 +1830,7 @@ class Chunk:
                     local_y=house_local_y,
                     asset=asset,
                     category=category,
-                    role=house.get("role", category),
+                    role=role,
                     index=house_index,
                 )
                 self._configure_house_yard(record, yard_margin)
@@ -1903,6 +1909,17 @@ class Chunk:
 
         tile_type = self._terrain_to_tile_type(local_x, local_y)
         near_water = self._is_near_water(local_x, local_y)
+        world_tile = self.get_world_tile(local_x, local_y)
+        ore_id = deterministic_ore_id(
+            world_seed,
+            world_tile,
+            biome_name,
+            self.metadata.get("danger", 1),
+        )
+        if ore_id is not None:
+            ore_path = ORE_ASSETS[ore_id].path
+            asset = ore_path.removeprefix("graphics/sprites/environment/")
+            return ("ore", ore_id, (asset,), False, 0)
         roll = rng.random()
 
         if biome_name == "grassland_and_forest":
@@ -1916,8 +1933,8 @@ class Chunk:
             if roll < 0.88:
                 return ("flower", "", "flowers", False, 0)
             if roll < 0.97:
-                variant = "big" if rng.random() < 0.25 else "small"
-                return ("rock", variant, f"rocks/{variant}", True, 6 if variant == "big" else 3)
+                rock = ROCK_ASSETS["land_rock"]
+                return ("rock", rock.id, rock.assets, True, rock.hit_points)
             return None
 
         if tile_type == "sand" and near_water:
@@ -1926,7 +1943,9 @@ class Chunk:
             if roll < 0.92:
                 return ("weed", "", "thickets/weeds", False, 0)
             if roll < 0.98:
-                return ("rock", "small", "rocks/small", True, 3)
+                rock_id = "beach_rock_big" if rng.random() < 0.25 else "beach_rock_small"
+                rock = ROCK_ASSETS[rock_id]
+                return ("rock", rock.id, rock.assets, True, rock.hit_points)
             return None
 
         if biome_name == "grassland_and_forest":
@@ -1938,14 +1957,14 @@ class Chunk:
             if roll < 0.94:
                 return ("flower", "", "flowers", False, 0)
             if roll < 0.99:
-                variant = "big" if rng.random() < 0.25 else "small"
-                return ("rock", variant, f"rocks/{variant}", True, 6 if variant == "big" else 3)
+                rock = ROCK_ASSETS["land_rock"]
+                return ("rock", rock.id, rock.assets, True, rock.hit_points)
             return None
 
         if biome_name in {"desert", "dryland", "mountain"}:
             if roll < 0.68:
-                variant = "big" if rng.random() < 0.35 else "small"
-                return ("rock", variant, f"rocks/{variant}", True, 6 if variant == "big" else 3)
+                rock = ROCK_ASSETS["land_rock"]
+                return ("rock", rock.id, rock.assets, True, rock.hit_points)
             if roll < 0.92 and biome_name == "dryland":
                 return ("weed", "", "thickets/weeds", False, 0)
             return None
@@ -1953,6 +1972,8 @@ class Chunk:
         return None
 
     def _asset_from_folder(self, folder: str, rng: random.Random):
+        if isinstance(folder, (tuple, list)):
+            return rng.choice(folder) if folder else None
         assets = list_environment_assets(*folder.split("/"))
         if not assets:
             return None
@@ -2006,6 +2027,11 @@ class Chunk:
                 continue
 
             prop_type, variant, asset_folder, blocks_movement, health = choice
+            # Tilled plots are reserved for planted crops. Flowers may remain
+            # as a temporary decorative exception, but rocks and other props
+            # must never cover a farm tile.
+            if self.layers["soil"][idx] != 0 and prop_type != "flower":
+                continue
             asset = self._asset_from_folder(asset_folder, rng)
             if asset is None:
                 continue
@@ -2013,7 +2039,8 @@ class Chunk:
             world_tile_x, world_tile_y = self.get_world_tile(local_x, local_y)
             world_x = world_tile_x * self.tile_size + self.tile_size // 2
             world_y = world_tile_y * self.tile_size + self.tile_size // 2
-            prop_id = f"environment:{self.coord}:{local_x}:{local_y}:{prop_type}"
+            resource_suffix = f":{variant}" if prop_type == "ore" else ""
+            prop_id = f"environment:{self.coord}:{local_x}:{local_y}:{prop_type}{resource_suffix}"
             record = {
                 "type": "environment",
                 "id": prop_id,
@@ -2028,6 +2055,15 @@ class Chunk:
                 "health": health,
                 "scale": 2,
             }
+            if prop_type == "rock" and variant in ROCK_ASSETS:
+                rock_spec = ROCK_ASSETS[variant]
+                record.update(
+                    drop_item=rock_spec.drop_item,
+                    drop_count=rock_spec.drop_count,
+                    drop_asset=rock_spec.drop_asset,
+                )
+            elif prop_type == "ore":
+                record["pickup_item"] = variant
             self.props.append(record)
             generated.append(record)
             self.set_decoration_tile(local_x, local_y, {"type": "environment", "id": prop_id, "prop_type": prop_type})
@@ -2072,6 +2108,8 @@ class Chunk:
                     continue
                 idx = self.get_index(local_x, local_y)
                 if self.layers["path"][idx] != 0:
+                    continue
+                if self.layers["soil"][idx] != 0:
                     continue
                 if self.layers["decoration"][idx] is not None:
                     continue

@@ -8,6 +8,7 @@ import random
 import pygame
 
 from utils import rp
+from data.content_manifest import EFFECT_ASSETS
 
 
 @dataclass(frozen=True)
@@ -16,6 +17,8 @@ class EffectSpec:
     frame_count: int
     fps: float
     scale: float = 1.0
+    frame_size: tuple[int, int] | None = None
+    columns: int | None = None
 
 
 def _fx(folder, names, frame_count, fps=28, scale=1.0):
@@ -54,9 +57,28 @@ EFFECT_SPECS = {
         16,
         24,
     ),
-    "fire": _fx("fire", ("fire.png",), 16, 18),
+    "fire": EffectSpec(
+        (("graphics", "effects", "fire", "fire.png"),),
+        EFFECT_ASSETS["fire"].frame_count,
+        18,
+        1.0,
+        EFFECT_ASSETS["fire"].frame_size,
+        EFFECT_ASSETS["fire"].columns,
+    ),
+    "points_reward": EffectSpec(
+        (("graphics", "sprites", "items", "star.png"),),
+        EFFECT_ASSETS["points_reward"].frame_count,
+        18,
+        2.0,
+    ),
     "gem": _fx("gem", ("gem_01.png", "gem_02.png", "gem_03.png"), 24, 28),
     "impact": _fx("impact", ("impact.png",), 16, 30),
+    "damage_word": EffectSpec(
+        tuple(("graphics", "effects", "word", name) for name in ("bam.png", "bang.png", "pow.png")),
+        1,
+        1,
+        2.0,
+    ),
     "spark": _fx("spark", ("spark_01.png", "spark_02.png", "spark_03.png"), 16, 22),
     "bush": _environment("bush", scale=1.0),
     "fruit": _environment("fruit"),
@@ -90,22 +112,38 @@ class EffectLibrary:
 
         path = spec.paths[variant_index]
         sheet = pygame.image.load(rp(*path)).convert_alpha()
-        if sheet.get_width() % spec.frame_count:
+        if spec.frame_size is not None:
+            frame_width, frame_height = spec.frame_size
+            columns = spec.columns or max(1, sheet.get_width() // frame_width)
+            rects = tuple(
+                pygame.Rect(
+                    (frame_index % columns) * frame_width,
+                    (frame_index // columns) * frame_height,
+                    frame_width,
+                    frame_height,
+                )
+                for frame_index in range(spec.frame_count)
+            )
+            if any(not sheet.get_rect().contains(rect) for rect in rects):
+                raise ValueError(
+                    f"Effect sheet {path!r} cannot hold {spec.frame_count} "
+                    f"{frame_width}x{frame_height} row-major frames"
+                )
+        elif sheet.get_width() % spec.frame_count:
             raise ValueError(
                 f"Effect sheet {path!r} cannot be split into "
                 f"{spec.frame_count} equal horizontal frames"
             )
-        frame_width = sheet.get_width() // spec.frame_count
+        else:
+            frame_width = sheet.get_width() // spec.frame_count
+            frame_height = sheet.get_height()
+            rects = tuple(
+                pygame.Rect(frame_index * frame_width, 0, frame_width, frame_height)
+                for frame_index in range(spec.frame_count)
+            )
         frames = []
-        for frame_index in range(spec.frame_count):
-            frame = sheet.subsurface(
-                pygame.Rect(
-                    frame_index * frame_width,
-                    0,
-                    frame_width,
-                    sheet.get_height(),
-                )
-            ).copy()
+        for rect in rects:
+            frame = sheet.subsurface(rect).copy()
             if spec.scale != 1:
                 frame = pygame.transform.scale(
                     frame,
@@ -189,6 +227,68 @@ class EffectAnimation:
         self.rect = self.image.get_rect(center=(round(self.pos.x), round(self.pos.y)))
 
 
+class FloatingText:
+    """World-space text that rises and fades after a combat event."""
+
+    def __init__(self, text, pos, *, color=(255, 92, 92), lifetime=0.9, velocity=(0, -48)):
+        self.pos = pygame.Vector2(pos)
+        self.velocity = pygame.Vector2(velocity)
+        self.lifetime = max(0.05, float(lifetime))
+        self.age = 0.0
+        self.alive = True
+        font = pygame.font.Font(rp("font", "LycheeSoda.ttf"), 26)
+        foreground = font.render(str(text), True, color)
+        outline = font.render(str(text), True, (38, 8, 12))
+        self.base_image = pygame.Surface(
+            (foreground.get_width() + 4, foreground.get_height() + 4),
+            pygame.SRCALPHA,
+        )
+        for offset in ((0, 2), (4, 2), (2, 0), (2, 4)):
+            self.base_image.blit(outline, outline.get_rect(center=(self.base_image.get_width() // 2 + offset[0] - 2, self.base_image.get_height() // 2 + offset[1] - 2)))
+        self.base_image.blit(foreground, foreground.get_rect(center=self.base_image.get_rect().center))
+        self.image = self.base_image
+        self.rect = self.image.get_rect(center=pos)
+
+    @property
+    def sort_y(self):
+        return self.rect.centery
+
+    def update(self, dt):
+        self.age += max(0.0, float(dt))
+        self.pos += self.velocity * max(0.0, float(dt))
+        if self.age >= self.lifetime:
+            self.alive = False
+            return
+        self.image = self.base_image.copy()
+        fade_start = self.lifetime * 0.45
+        if self.age > fade_start:
+            alpha = round(255 * (1.0 - (self.age - fade_start) / (self.lifetime - fade_start)))
+            self.image.set_alpha(max(0, alpha))
+        self.rect = self.image.get_rect(center=(round(self.pos.x), round(self.pos.y)))
+
+
+class FloatingItemGain(FloatingText):
+    """A harvested-item icon and quantity that rise together in world space."""
+
+    def __init__(self, item_name, amount, pos, *, lifetime=1.05, velocity=(0, -48)):
+        from ui.inventory import load_item_icon
+
+        super().__init__(f"+{int(amount)}", pos, color=(248, 238, 174), lifetime=lifetime, velocity=velocity)
+        text_image = self.base_image
+        icon = load_item_icon(item_name, (30, 30))
+        if not isinstance(icon, pygame.Surface):
+            return
+        combined = pygame.Surface(
+            (icon.get_width() + 5 + text_image.get_width(), max(icon.get_height(), text_image.get_height())),
+            pygame.SRCALPHA,
+        )
+        combined.blit(icon, icon.get_rect(midleft=(0, combined.get_height() // 2)))
+        combined.blit(text_image, text_image.get_rect(midright=(combined.get_width(), combined.get_height() // 2)))
+        self.base_image = combined
+        self.image = combined
+        self.rect = combined.get_rect(center=pos)
+
+
 class EffectsManager:
     """Own transient animations and low-frequency world interaction emitters."""
 
@@ -199,9 +299,10 @@ class EffectsManager:
         "weed": "grass",
     }
 
-    def __init__(self, library=None, rng=None):
+    def __init__(self, library=None, rng=None, *, reduced_motion=False):
         self.library = library or EffectLibrary()
         self.rng = rng or random.Random()
+        self.reduced_motion = bool(reduced_motion)
         self.active = []
         self.spark_cooldown = 0.0
         self._recent_sparks = {}
@@ -223,6 +324,45 @@ class EffectsManager:
     def arrow_impact(self, pos):
         """Public hook for a projectile when its collision is resolved."""
         return self.spawn("impact", pos)
+
+    def floating_text(self, text, pos, *, color=(255, 92, 92), lifetime=0.9):
+        effect = FloatingText(
+            text,
+            pos,
+            color=color,
+            lifetime=lifetime,
+            velocity=(0, -18 if self.reduced_motion else -48),
+        )
+        self.active.append(effect)
+        return effect
+
+    def item_gain(self, item_name, amount, pos):
+        effect = FloatingItemGain(
+            item_name,
+            amount,
+            pos,
+            velocity=(0, -18 if self.reduced_motion else -48),
+        )
+        self.active.append(effect)
+        return effect
+
+    def burst(self, effect_name, pos, *, count=5, speed=(28, 68)):
+        """Scatter the same fading particles used by environmental contact FX."""
+        spawned = []
+        for _ in range(max(1, int(count))):
+            direction = pygame.Vector2(1, 0).rotate(self.rng.uniform(0, 360))
+            origin = pygame.Vector2(pos) + direction * self.rng.uniform(2, 9)
+            spawned.append(
+                self.spawn(
+                    effect_name,
+                    origin,
+                    velocity=direction * self.rng.uniform(*speed),
+                    loop=True,
+                    lifetime=self.rng.uniform(0.65, 1.0),
+                    fade=True,
+                )
+            )
+        return tuple(spawned)
 
     def spawn(
         self,
@@ -335,7 +475,7 @@ class EffectsManager:
             else:
                 self._recent_sparks[key] = remaining
 
-        if player is not None and getattr(player, "is_alive", True):
+        if player is not None and getattr(player, "is_alive", True) and not self.reduced_motion:
             self._emit_environment_contacts(player, world)
             self._highlight_nearby_props(player, world)
 

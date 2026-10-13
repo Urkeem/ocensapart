@@ -4,6 +4,7 @@ import pygame
 
 
 FPS = 60
+PLAYER_MAX_HEALTH = 100
 # Development overlays render changing text and collision rectangles every frame.
 # Enable this only when inspecting chunks or collisions.
 SHOW_DEBUG_OVERLAY = False

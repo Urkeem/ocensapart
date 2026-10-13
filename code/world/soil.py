@@ -1,12 +1,14 @@
 """Farm soil, watering, planting, crop growth, and soil rendering helpers."""
 
-from pathlib import Path
 import pygame
 
 from TileMapManager import TileMap
 from inventory_item import Item
 from sprites import WorldObject
 from utils import rp
+from data.content_manifest import CROP_ASSETS
+from data.crops import CROP_DEFINITIONS, STARTER_CROP_IDS, is_crop_unlocked
+from gameplay.events import CropHarvested, CropWatered, next_event_id, publish_from
 
 
 SOIL_TILESET_FILE = "Tilesets/loam.png"
@@ -21,20 +23,19 @@ PLANT_DRY_DEATH_MINUTES = MINUTES_PER_DAY * 2
 UNUSED_PLAYER_SOIL_LIFETIME_MINUTES = MINUTES_PER_DAY * 7
 SOIL_UPDATE_INTERVAL_MINUTES = 10
 PLANT_MAX_GROWTH_DAYS = {
-    "corn": 5,
-    "tomato": 5,
+    crop_id: crop.growth_days
+    for crop_id, crop in CROP_DEFINITIONS.items()
 }
 
 
 def load_crop_growth_frames():
     """Load growth cells 2..7 from every 16px crop sheet."""
-    crop_root = Path(rp("graphics", "environment", "crops"))
     crops = {}
-    for path in sorted(crop_root.glob("*.png")):
-        sheet = pygame.image.load(str(path)).convert_alpha()
+    for crop_id, asset in CROP_ASSETS.items():
+        sheet = pygame.image.load(rp(*asset.path.split("/"))).convert_alpha()
         if sheet.get_width() < 8 * CROP_SOURCE_SIZE or sheet.get_height() < 2 * CROP_SOURCE_SIZE:
             continue
-        crops[path.stem] = tuple(
+        crops[crop_id] = tuple(
             sheet.subsurface(
                 (
                     column * CROP_SOURCE_SIZE,
@@ -98,7 +99,9 @@ class SoilLayer:
         self.current_day = 1
         self._last_update_bucket = None
         self.plant_frames = load_crop_growth_frames()
-        self.available_crops = tuple(sorted(self.plant_frames))
+        self.available_crops = tuple(
+            crop_id for crop_id in STARTER_CROP_IDS if crop_id in self.plant_frames
+        )
         self.hoe_sound = self._load_sound("audio/hoe.wav", 0.1)
         self.water_sound = self._load_sound("audio/water.mp3", 0.2)
         self.plant_sound = self._load_sound("audio/plant.wav", 0.2)
@@ -218,10 +221,11 @@ class SoilLayer:
         state = self.get_tile_state(world_tile, game_time)
         return bool(state and state["tilled"] and not state["watered"])
 
-    def can_plant_at_tile(self, world_tile, seed):
+    def can_plant_at_tile(self, world_tile, seed, game_state=None):
         state = self.get_tile_state(world_tile)
         return bool(
             seed in self.plant_frames
+            and is_crop_unlocked(seed, game_state)
             and state
             and state["tilled"]
             and state["plant"] is None
@@ -254,7 +258,7 @@ class SoilLayer:
         self._play(self.hoe_sound)
         return True
 
-    def water_at(self, world_pos, game_time=None):
+    def water_at(self, world_pos, game_time=None, player=None):
         current_time = self._absolute_minutes(game_time)
         current_day = self._current_day(game_time)
         world_tile = self.world_to_tile(world_pos)
@@ -272,10 +276,22 @@ class SoilLayer:
         self._set_water(chunk, local_x, local_y, current_time, current_day)
         self.world.invalidate_soil_chunk_and_neighbors(chunk.coord)
         self._play(self.water_sound)
+        if player is not None:
+            plant = chunk.layers["plant"][idx]
+            game_state = getattr(player, "game_state", None)
+            publish_from(
+                player,
+                CropWatered(
+                    event_id=next_event_id(player, "crop_watered"),
+                    crop_id=plant.get("type") if plant else None,
+                    location_id=getattr(game_state, "current_location_id", "player_farm"),
+                    world_tile=world_tile,
+                ),
+            )
         return True
 
-    def plant_seed_at(self, world_pos, seed, game_time=None):
-        if seed not in self.plant_frames:
+    def plant_seed_at(self, world_pos, seed, game_time=None, game_state=None):
+        if seed not in self.plant_frames or not is_crop_unlocked(seed, game_state):
             return False
         current_time = self._absolute_minutes(game_time)
         current_day = self._current_day(game_time)
@@ -412,7 +428,7 @@ class SoilLayer:
                 changed_chunks.append(chunk)
         return changed_chunks
 
-    def _award_harvest(self, player, plant_type):
+    def _award_harvest(self, player, plant_type, world_tile=None):
         if player is not None and hasattr(player, "harvested_crops"):
             player.harvested_crops[plant_type] = player.harvested_crops.get(plant_type, 0) + 1
         inventory = getattr(player, "inventory", None)
@@ -421,7 +437,7 @@ class SoilLayer:
             image = ""
             if frames:
                 image = pygame.transform.scale(frames[-1], (32, 32))
-            inventory.add_item_to_slot(
+            added = inventory.add_item_to_slot(
                 Item(
                     plant_type,
                     image,
@@ -429,6 +445,32 @@ class SoilLayer:
                     inventory.craft_system.return_craft_product(plant_type),
                 )
             )
+            effect_manager = getattr(player, "effect_manager", None)
+            if added and effect_manager is not None:
+                if world_tile is None:
+                    effect_pos = getattr(player, "center", (0, 0))
+                else:
+                    effect_pos = (
+                        (world_tile[0] + 0.5) * self.world.tile_size,
+                        world_tile[1] * self.world.tile_size,
+                    )
+                effect_manager.item_gain(plant_type, 1, effect_pos)
+
+    @staticmethod
+    def _publish_harvest(player, plant_type, world_tile):
+        if player is None:
+            return
+        game_state = getattr(player, "game_state", None)
+        publish_from(
+            player,
+            CropHarvested(
+                event_id=next_event_id(player, "crop_harvested"),
+                crop_id=plant_type,
+                count=1,
+                location_id=getattr(game_state, "current_location_id", "player_farm"),
+                world_tile=world_tile,
+            ),
+        )
 
     def harvest_at(self, world_pos, player=None):
         """Harvest one mature crop at the explicitly targeted tile."""
@@ -442,7 +484,8 @@ class SoilLayer:
         plant_type = state["plant"]["type"]
         chunk.set_saved_tile("plant", local_x, local_y, None)
         self._touch_player_soil(chunk, local_x, local_y, self.current_time_minutes)
-        self._award_harvest(player, plant_type)
+        self._award_harvest(player, plant_type, world_tile)
+        self._publish_harvest(player, plant_type, world_tile)
         return plant_type
 
     def harvest_colliding(self, collision_rect, player=None):
@@ -476,7 +519,12 @@ class SoilLayer:
                 )
                 changed_chunks.add(chunk)
                 harvested.append(plant_type)
-                self._award_harvest(player, plant_type)
+                self._award_harvest(player, plant_type, (world_tile_x, world_tile_y))
+                self._publish_harvest(
+                    player,
+                    plant_type,
+                    (world_tile_x, world_tile_y),
+                )
 
         for chunk in changed_chunks:
             chunk.mark_dirty()

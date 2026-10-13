@@ -9,14 +9,22 @@ from gameplay.controls import (
     BUTTON_TOOL_NEXT,
     get_controller_input,
 )
-from ui.inventory import Inventory
+from gameplay.config import PLAYER_MAX_HEALTH
+from ui.inventory import Inventory, canonical_item_name
 from inventory_item import Item
 from gameplay.world_objects import (
     can_place_environment_prop_at,
     remove_environment_prop_at,
     set_environment_prop_at,
 )
-from gameplay.fishing import choose_fish, load_fish_icon
+from gameplay.fishing import choose_fish, fishing_block_reason, load_fish_icon
+from data.crops import CROP_DEFINITIONS, is_crop_unlocked
+from gameplay.stamina import ACTION_STAMINA_COSTS
+from data.equipment import (
+    EQUIPMENT_DEFINITIONS,
+    new_equipment_state,
+    normalize_equipment_state,
+)
 from sprites import AnimatedWorldObject
 from swimming import SwimVisual
 from world.fence import FENCE_SEGMENT, can_place_fence_at, set_fence_at
@@ -53,34 +61,42 @@ class Player(AnimatedWorldObject):
         self.direction = pygame.Vector2()
         self.pos = pygame.Vector2(pos)
         self.speed = speed
+        self.base_speed = speed
+        self.is_sprinting = False
+        self.recovery_active = False
+        self.stamina_enabled = False
+        self.location_tools_enabled = True
+        self.mounted_vessel = None
+        self.hidden_by_vessel = False
         self.visual_scale = visual_scale
         self.soil_layer = soil_layer
         self.controller_input = controller_input or get_controller_input()
-        # Combat equipment lives in the same one-of-each rotation as the
-        # resource tools shown in the bottom-right HUD slot.
         self.tools = [
-            "hoe", "axe", "pickaxe", "shovel", "water", "fishing rod",
-            "sword", "spear", "shield",
+            equipment_id
+            for equipment_id, definition in EQUIPMENT_DEFINITIONS.items()
+            if definition.equipment_type == "tool"
         ]
-        self.tool_max_durability = {
-            "hoe": 50,
-            "axe": 40,
-            "pickaxe": 45,
-            "shovel": 45,
-            "water": 60,
-            "fishing rod": 40,
-            "sword": 100,
-            "spear": 100,
-            "shield": 120,
+        self.weapons = [
+            equipment_id
+            for equipment_id, definition in EQUIPMENT_DEFINITIONS.items()
+            if definition.equipment_type == "weapon"
+        ]
+        self.equipment_state = {
+            equipment_id: new_equipment_state(equipment_id)
+            for equipment_id in EQUIPMENT_DEFINITIONS
         }
-        self.tool_durability = dict(self.tool_max_durability)
-        self.broken_tools = set()
+        self.sync_equipment_compatibility()
         self.water_capacity = 8
         self.water_amount = self.water_capacity
         self.tool_index = 0
         self.selected_tool = self.tools[self.tool_index]
-        self._sync_equipped_tool(refresh=False)
-        crop_names = tuple(getattr(self.soil_layer, "available_crops", ()))
+        self.weapon_index = 0
+        self.selected_weapon = self.weapons[self.weapon_index]
+        self.selection_slots = ("seed", "tool", "weapon")
+        self.selection_slot_index = 1
+        self.selected_selection_slot = self.selection_slots[self.selection_slot_index]
+        self._sync_equipped_weapon(refresh=False)
+        crop_names = tuple(CROP_DEFINITIONS)
         self.seeds = list(crop_names or ("corn", "tomato"))
         self.seed_index = 0
         self.selected_seed = "corn" if "corn" in self.seeds else self.seeds[self.seed_index]
@@ -91,9 +107,13 @@ class Player(AnimatedWorldObject):
                 self.seed_inventory[starter_seed] = 5
         self.harvested_crops = {crop_name: 0 for crop_name in self.seeds}
         self.inventory = Inventory(20)
+        self.selected_consumable = None
+        self.hotbar_slot_index = 0
+        self._consume_button_lock = False
         self.coins = 25
         self.dialogue_active = False
-        self.max_health = 5
+        self.journal_active = False
+        self.max_health = PLAYER_MAX_HEALTH
         self.health = self.max_health
         self.invulnerable_timer = 0.0
         self.invulnerable_duration = 0.75
@@ -129,11 +149,14 @@ class Player(AnimatedWorldObject):
         self.current_season = "Summer"
         self.fishing_rng = random.Random()
         self.world_hint_seen = set()
+        self.game_state = None
+        self.event_dispatcher = None
         self.world_hint_elapsed = 0.0
         self.rock_drop_callback = None
         self.swim_visual = SwimVisual(visual_scale)
         self.feet_collision_offset = pygame.Vector2(0, -36)
         self.collision_box_offset = pygame.Vector2(0, 4)
+        self.house = "farmhouse"
 
         super().__init__(
             pos=pos,
@@ -215,7 +238,11 @@ class Player(AnimatedWorldObject):
             return world_tile, "water"
         if (
             self.seed_inventory.get(self.selected_seed, 0) > 0
-            and soil.can_plant_at_tile(world_tile, self.selected_seed)
+            and soil.can_plant_at_tile(
+                world_tile,
+                self.selected_seed,
+                getattr(self, "game_state", None),
+            )
         ):
             return world_tile, "plant"
         return None
@@ -307,34 +334,91 @@ class Player(AnimatedWorldObject):
             )
         return interaction_box
 
-    def switch_tool(self):
+    def switch_tool(self, direction=1):
         if self.fishing_active:
             self.cancel_fishing("Line reeled in")
         for _ in self.tools:
-            self.tool_index = (self.tool_index + 1) % len(self.tools)
+            self.tool_index = (self.tool_index + (1 if direction >= 0 else -1)) % len(self.tools)
             candidate = self.tools[self.tool_index]
             if self.is_tool_usable(candidate):
                 self.selected_tool = candidate
-                self._sync_equipped_tool()
                 return
 
-    def _sync_equipped_tool(self, refresh=True):
-        """Make the selected tool slot the only combat-equipment selector."""
+    def switch_weapon(self, direction=1):
+        for _ in self.weapons:
+            self.weapon_index = (self.weapon_index + (1 if direction >= 0 else -1)) % len(self.weapons)
+            candidate = self.weapons[self.weapon_index]
+            if self.is_tool_usable(candidate):
+                self.selected_weapon = candidate
+                self._sync_equipped_weapon()
+                return
+
+    def cycle_selection_slot(self):
+        self.selection_slot_index = (self.selection_slot_index + 1) % len(self.selection_slots)
+        self.selected_selection_slot = self.selection_slots[self.selection_slot_index]
+        self._sync_equipped_weapon()
+        return self.selected_selection_slot
+
+    def change_active_selection(self, direction=1):
+        slot = self.selected_selection_slot
+        if slot == "seed":
+            self.switch_seed(direction)
+        elif slot == "weapon":
+            self.switch_weapon(direction)
+        else:
+            self.switch_tool(direction)
+
+    def _sync_equipped_weapon(self, refresh=True):
+        """Keep the character layers aligned with the dedicated weapon slot."""
+        selected_weapon = getattr(self, "selected_weapon", None)
+        if selected_weapon is None and getattr(self, "selected_tool", None) in COMBAT_TOOLS:
+            selected_weapon = self.selected_tool
+            self.selected_weapon = selected_weapon
+        weapon_slot_active = self.is_weapon_slot_selected()
         customization = dict(self.customization)
         customization["weapon"] = (
-            self.selected_tool if self.selected_tool in {"sword", "spear"} else None
+            selected_weapon
+            if weapon_slot_active and selected_weapon in {"sword", "spear"}
+            else None
         )
-        customization["offhand"] = "shield" if self.selected_tool == "shield" else None
+        customization["offhand"] = (
+            "shield" if weapon_slot_active and selected_weapon == "shield" else None
+        )
         if refresh and hasattr(self, "rect"):
             self.set_customization(customization)
         else:
             self.customization = self.assets.normalize_character_customization(customization)
 
+    def is_weapon_slot_selected(self):
+        """Return whether weapon visuals and combat actions are currently active."""
+        return getattr(self, "selected_selection_slot", "weapon") == "weapon"
+
+    def _sync_equipped_tool(self, refresh=True):
+        """Compatibility alias for saves and callers from the combined-slot era."""
+        if getattr(self, "selected_tool", None) in COMBAT_TOOLS:
+            self.selected_weapon = self.selected_tool
+            if hasattr(self, "selection_slots"):
+                self.selected_selection_slot = "weapon"
+                self.selection_slot_index = self.selection_slots.index("weapon")
+        self._sync_equipped_weapon(refresh=refresh)
+
     def has_equipped_weapon(self, weapon_name):
-        return self.selected_tool == weapon_name
+        selected = getattr(self, "selected_weapon", getattr(self, "selected_tool", None))
+        return (
+            self.is_weapon_slot_selected()
+            and selected == weapon_name
+            and self.is_tool_usable(weapon_name)
+        )
 
     def is_tool_usable(self, tool_name=None):
         tool_name = tool_name or self.selected_tool
+        equipment = getattr(self, "equipment_state", {}).get(tool_name)
+        if equipment is not None:
+            return (
+                equipment.get("owned", True)
+                and not equipment.get("broken", False)
+                and equipment.get("durability", 0) > 0
+            )
         return (
             tool_name not in getattr(self, "broken_tools", set())
             and getattr(self, "tool_durability", {}).get(tool_name, 1) > 0
@@ -342,6 +426,19 @@ class Player(AnimatedWorldObject):
 
     def wear_tool(self, tool_name=None, amount=1):
         tool_name = tool_name or self.selected_tool
+        equipment = getattr(self, "equipment_state", {}).get(tool_name)
+        if equipment is not None:
+            equipment["durability"] = max(
+                0,
+                int(equipment.get("durability", 0)) - max(0, int(amount)),
+            )
+            equipment["broken"] = equipment["durability"] <= 0
+            self.tool_durability[tool_name] = equipment["durability"]
+            if equipment["broken"]:
+                self.broken_tools.add(tool_name)
+            else:
+                self.broken_tools.discard(tool_name)
+            return True
         if tool_name not in getattr(self, "tool_durability", {}):
             return False
         self.tool_durability[tool_name] = max(
@@ -356,26 +453,182 @@ class Player(AnimatedWorldObject):
         if tool_name == "watering can":
             tool_name = "water"
         if not hasattr(self, "tools"):
-            self.tools = list(self.tool_max_durability)
-        if tool_name not in self.tools:
-            self.tools.append(tool_name)
+            self.tools = [
+                equipment_id for equipment_id in getattr(self, "tool_max_durability", {})
+                if equipment_id not in COMBAT_TOOLS
+            ]
+        if not hasattr(self, "weapons"):
+            self.weapons = [
+                equipment_id for equipment_id in getattr(self, "tool_max_durability", {})
+                if equipment_id in COMBAT_TOOLS
+            ]
+        definition = EQUIPMENT_DEFINITIONS.get(tool_name)
+        collection = self.weapons if definition and definition.equipment_type == "weapon" else self.tools
+        if tool_name not in collection:
+            collection.append(tool_name)
+        if tool_name in EQUIPMENT_DEFINITIONS and hasattr(self, "equipment_state"):
+            equipment = self.equipment_state
+            record = equipment.get(tool_name)
+            if record is None:
+                record = new_equipment_state(tool_name)
+                equipment[tool_name] = record
+            record["owned"] = True
+            record["durability"] = int(record["max_durability"])
+            record["broken"] = False
+            self.sync_equipment_compatibility()
+            return True
         maximum = self.tool_max_durability.get(tool_name, 40)
         self.tool_max_durability[tool_name] = maximum
         self.tool_durability[tool_name] = maximum
         self.broken_tools.discard(tool_name)
         return True
 
-    def switch_seed(self):
+    def sync_equipment_compatibility(self):
+        """Keep legacy durability views synchronized with canonical tier state."""
+        equipment = getattr(self, "equipment_state", {})
+        self.tool_max_durability = {
+            equipment_id: int(record["max_durability"])
+            for equipment_id, record in equipment.items()
+        }
+        self.tool_durability = {
+            equipment_id: int(record["durability"])
+            for equipment_id, record in equipment.items()
+        }
+        self.broken_tools = {
+            equipment_id
+            for equipment_id, record in equipment.items()
+            if record.get("broken", False) or record.get("durability", 0) <= 0
+        }
+
+    def import_legacy_equipment_state(self):
+        legacy_maximum = dict(getattr(self, "tool_max_durability", {}))
+        legacy_durability = dict(getattr(self, "tool_durability", {}))
+        broken = set(getattr(self, "broken_tools", ()))
+        self.equipment_state = {}
+        for equipment_id in (*self.tools, *getattr(self, "weapons", ())):
+            if equipment_id not in EQUIPMENT_DEFINITIONS:
+                continue
+            record = new_equipment_state(equipment_id)
+            record["max_durability"] = max(
+                record["max_durability"],
+                int(legacy_maximum.get(equipment_id, record["max_durability"])),
+            )
+            record["durability"] = max(
+                0,
+                min(
+                    record["max_durability"],
+                    int(legacy_durability.get(equipment_id, record["durability"])),
+                ),
+            )
+            record["broken"] = equipment_id in broken or record["durability"] <= 0
+            self.equipment_state[equipment_id] = normalize_equipment_state(equipment_id, record)
+        self.sync_equipment_compatibility()
+
+    def switch_seed(self, direction=1):
         stocked_seeds = [
             index
             for index, seed in enumerate(self.seeds)
             if self.seed_inventory.get(seed, 0) > 0
+            and is_crop_unlocked(seed, getattr(self, "game_state", None))
         ]
         if not stocked_seeds:
             return
-        later = [index for index in stocked_seeds if index > self.seed_index]
-        self.seed_index = later[0] if later else stocked_seeds[0]
+        ordered = sorted(stocked_seeds)
+        if self.seed_index not in ordered:
+            self.seed_index = ordered[0]
+        else:
+            current = ordered.index(self.seed_index)
+            self.seed_index = ordered[(current + (1 if direction >= 0 else -1)) % len(ordered)]
         self.selected_seed = self.seeds[self.seed_index]
+
+    def select_tool(self, tool_name):
+        """Equip an owned, usable resource tool from an inventory choice."""
+        tool_name = str(tool_name or "").strip().lower().replace(" ", "_")
+        if tool_name in self.weapons:
+            return self.select_weapon(tool_name)
+        if tool_name not in self.tools or not self.is_tool_usable(tool_name):
+            return False
+        if self.fishing_active and tool_name != "fishing_rod":
+            self.cancel_fishing("Line reeled in")
+        self.tool_index = self.tools.index(tool_name)
+        self.selected_tool = tool_name
+        return True
+
+    def select_weapon(self, weapon_name):
+        weapon_name = str(weapon_name or "").strip().lower().replace(" ", "_")
+        if weapon_name not in self.weapons or not self.is_tool_usable(weapon_name):
+            return False
+        self.weapon_index = self.weapons.index(weapon_name)
+        self.selected_weapon = weapon_name
+        self._sync_equipped_weapon()
+        return True
+
+    def select_seed(self, crop_id):
+        crop_id = str(crop_id or "").strip().lower().replace(" ", "_")
+        if (
+            crop_id not in self.seeds
+            or self.seed_inventory.get(crop_id, 0) <= 0
+            or not is_crop_unlocked(crop_id, getattr(self, "game_state", None))
+        ):
+            return False
+        self.seed_index = self.seeds.index(crop_id)
+        self.selected_seed = crop_id
+        return True
+
+    def select_consumable(self, item_name):
+        item_name = Player.inventory_food_name(self, item_name)
+        if item_name is None:
+            return False
+        self.selected_consumable = item_name
+        self.inventory.hotbar_item_name = item_name
+        return True
+
+    def inventory_food_name(self, item_name):
+        """Resolve food that exists in the item inventory, never seed stock."""
+        from gameplay.stamina import FOOD_STAMINA
+
+        item_name = canonical_item_name(item_name)
+        if item_name in FOOD_STAMINA and self.inventory.count_item(item_name) > 0:
+            return item_name
+        return None
+
+    def selected_hotbar_food(self):
+        """Return edible produce from the active one of the five hotbar slots."""
+        slots = self.inventory.slots[:5]
+        if not slots:
+            return None
+        index = int(getattr(self, "hotbar_slot_index", 0)) % len(slots)
+        return Player.inventory_food_name(self, slots[index].item.name)
+
+    def select_hotbar_item(self, item_name):
+        """Route an inventory selection to the matching semantic hotbar slot."""
+        normalized = str(item_name or "").strip().lower().replace(" ", "_")
+        if normalized in self.tools:
+            return self.select_tool(normalized)
+        return self.select_consumable(normalized)
+
+    def cycle_hotbar_slot(self):
+        slots = self.inventory.slots[:5]
+        if not slots:
+            self.hotbar_slot_index = 0
+            return 0
+        current = int(getattr(self, "hotbar_slot_index", 0)) % len(slots)
+        occupied = [index for index, slot in enumerate(slots) if slot.item.name]
+        if occupied:
+            later = [index for index in occupied if index > current]
+            self.hotbar_slot_index = later[0] if later else occupied[0]
+        else:
+            self.hotbar_slot_index = (current + 1) % len(slots)
+        self.activate_hotbar_slot(self.hotbar_slot_index)
+        return self.hotbar_slot_index
+
+    def activate_hotbar_slot(self, index):
+        slots = self.inventory.slots[:5]
+        if not 0 <= int(index) < len(slots):
+            return False
+        self.hotbar_slot_index = int(index)
+        item_name = slots[self.hotbar_slot_index].item.name
+        return bool(item_name and self.select_hotbar_item(item_name))
 
     @property
     def is_alive(self):
@@ -401,9 +654,13 @@ class Player(AnimatedWorldObject):
             not self.is_alive
             or self.inventory.is_inv
             or self.dialogue_active
+            or self.journal_active
+            or self.recovery_active
             or self.combat_action_timer > 0
             or self.action_lock_timer > 0
         ):
+            return False
+        if not self.spend_stamina(ACTION_STAMINA_COSTS["combat"]):
             return False
         if self.fishing_active:
             self.cancel_fishing("Combat interrupted fishing")
@@ -417,7 +674,9 @@ class Player(AnimatedWorldObject):
         if amount <= 0 or self.invulnerable_timer > 0 or not self.is_alive:
             return False
 
+        previous_health = self.health
         self.health = max(0, self.health - int(amount))
+        damage_dealt = previous_health - self.health
         self.invulnerable_timer = self.invulnerable_duration
         self.apply_knockback(source)
         if self.health > 0:
@@ -428,6 +687,18 @@ class Player(AnimatedWorldObject):
         effect_manager = effects or self.effect_manager
         if effect_manager is not None:
             effect_manager.spawn("blood", self.rect.center)
+            effect_manager.spawn(
+                "damage_word",
+                self.rect.midtop,
+                velocity=(0, -12),
+                lifetime=0.7,
+                fade=True,
+            )
+            if hasattr(effect_manager, "floating_text"):
+                effect_manager.floating_text(
+                    f"-{damage_dealt}",
+                    (self.rect.centerx, self.rect.top - 12),
+                )
         if (
             self.health > 0
             and self.health <= self.max_health / 2
@@ -494,7 +765,7 @@ class Player(AnimatedWorldObject):
         self.knockback_velocity.update(0, 0)
         self.knockback_timer = 0.0
         self.direction.update(0, 0)
-        idle_action = "weapon_idle" if self.selected_tool in COMBAT_TOOLS else "idle"
+        idle_action = "weapon_idle" if getattr(self, "selected_selection_slot", "tool") == "weapon" else "idle"
         self.status = f"{self.facing}_{idle_action}"
         self.loop = True
         self.animation_finished = False
@@ -510,6 +781,47 @@ class Player(AnimatedWorldObject):
         if self.health > self.max_health / 2:
             self.half_health_effect_shown = False
         return self.health != previous
+
+    def spend_stamina(self, amount):
+        if self.game_state is None or not getattr(self, "stamina_enabled", False):
+            return True
+        amount = max(0.0, float(amount))
+        if self.game_state.stamina <= 0:
+            return False
+        self.game_state.stamina = max(0.0, self.game_state.stamina - amount)
+        return True
+
+    def consume_food(self, item_name=None):
+        if (
+            self.game_state is None
+            or not getattr(self, "stamina_enabled", False)
+            or self.game_state.stamina >= self.game_state.max_stamina
+        ):
+            return 0
+        from gameplay.stamina import FOOD_STAMINA
+
+        if item_name is None:
+            selected = getattr(self, "selected_consumable", None)
+            item_name = selected if selected and self.inventory.count_item(selected) else None
+            if item_name is None:
+                item_name = next((name for name in FOOD_STAMINA if self.inventory.count_item(name)), None)
+        item_name = canonical_item_name(item_name)
+        restore = FOOD_STAMINA.get(item_name)
+        if restore is None or not self.inventory.remove_item_count(item_name, 1):
+            return 0
+        previous = self.game_state.stamina
+        self.game_state.stamina = min(self.game_state.max_stamina, previous + restore)
+        if (
+            self.inventory.count_item(item_name) <= 0
+            and getattr(self, "selected_consumable", None) == item_name
+        ):
+            self.selected_consumable = next(
+                (name for name in FOOD_STAMINA if self.inventory.count_item(name)),
+                None,
+            )
+            if hasattr(self.inventory, "hotbar_item_name"):
+                self.inventory.hotbar_item_name = self.selected_consumable
+        return round(self.game_state.stamina - previous, 2)
 
     def get_facing_offset(self):
         if self.facing == "up":
@@ -567,7 +879,7 @@ class Player(AnimatedWorldObject):
         if species is None:
             return False
         return self.inventory.add_item_to_slot(
-            Item(species.name, load_fish_icon(species))
+            Item(species.id, load_fish_icon(species))
         )
 
     def _set_fishing_state(self, state):
@@ -615,11 +927,23 @@ class Player(AnimatedWorldObject):
         self.fishing_timer = 0.0
         self.fishing_target_tile = target_tile
         self.fishing_locality = world.get_water_locality(target_tile)
+        game_state = getattr(self, "game_state", None)
+        if self.fishing_locality == "ocean":
+            vessel = getattr(self, "mounted_vessel", None)
+            if vessel is None or not getattr(vessel, "allows_sea_fishing", lambda: False)():
+                self.cancel_fishing("Unlock the boat and reach 150 Fishing points to fish at sea")
+                return False
         self.fishing_pending_catch = choose_fish(
             self.fishing_locality,
             self.current_season,
             self.fishing_rng,
+            game_state,
         )
+        if self.fishing_pending_catch is None:
+            self.cancel_fishing(
+                fishing_block_reason(self.fishing_locality, game_state)
+            )
+            return False
         self.fishing_reels_remaining = self.fishing_pending_catch.required_reels
         self.fishing_bobber_pos = (
             target_tile[0] * world.tile_size + world.tile_size // 2,
@@ -692,6 +1016,13 @@ class Player(AnimatedWorldObject):
         return None
 
     def use_tool(self):
+        game_state = getattr(self, "game_state", None)
+        if not getattr(self, "location_tools_enabled", True) or (
+            getattr(self, "stamina_enabled", False)
+            and game_state is not None
+            and game_state.stamina <= 0
+        ):
+            return None
         if self.soil_layer is None:
             return None
 
@@ -739,7 +1070,7 @@ class Player(AnimatedWorldObject):
                 return "clear"
             return None
         elif self.selected_tool == "water":
-            if self.water_amount > 0 and self.soil_layer.water_at(target_pos):
+            if self.water_amount > 0 and self.soil_layer.water_at(target_pos, player=self):
                 self.water_amount -= 1
                 self.wear_tool("water")
                 return "water"
@@ -785,12 +1116,19 @@ class Player(AnimatedWorldObject):
         return None
 
     def use_seed(self):
-        if self.soil_layer is None:
+        if not getattr(self, "location_tools_enabled", True) or self.soil_layer is None:
             return False
         if self.seed_inventory.get(self.selected_seed, 0) <= 0:
             return False
+        game_state = getattr(self, "game_state", None)
+        if not is_crop_unlocked(self.selected_seed, game_state):
+            return False
 
-        if self.soil_layer.plant_seed_at(self.get_target_pos(), self.selected_seed):
+        if self.soil_layer.plant_seed_at(
+            self.get_target_pos(),
+            self.selected_seed,
+            game_state=game_state,
+        ):
             self.seed_inventory[self.selected_seed] -= 1
             return True
         return False
@@ -834,6 +1172,19 @@ class Player(AnimatedWorldObject):
                 if self.fishing_state_timer >= FISHING_STATE_DURATIONS["reel"]:
                     caught = self.fishing_pending_catch
                     added = self.add_fish_to_inventory(caught)
+                    if added:
+                        from gameplay.events import FishCaught, next_event_id, publish_from
+
+                        publish_from(
+                            self,
+                            FishCaught(
+                                event_id=next_event_id(self, "fish_caught"),
+                                fish_id=caught.id,
+                                locality=caught.locality,
+                                required_reels=caught.required_reels,
+                                point_reward=caught.point_reward,
+                            ),
+                        )
                     message = (
                         f"Caught {caught.name}" if added else "Inventory full"
                     )
@@ -842,8 +1193,13 @@ class Player(AnimatedWorldObject):
     def handle_input(self):
         keys = pygame.key.get_pressed()
         controls = self.controller_input
+        controller_tool_pressed = controls.get_button(BUTTON_TOOL)
+        if not controller_tool_pressed:
+            self._consume_button_lock = False
+        self.speed = self.base_speed
+        self.is_sprinting = False
 
-        if self.inventory.is_inv or self.dialogue_active or not self.is_alive:
+        if self.inventory.is_inv or self.dialogue_active or self.journal_active or self.recovery_active or not self.is_alive:
             self.direction.update(0, 0)
             return
 
@@ -855,28 +1211,32 @@ class Player(AnimatedWorldObject):
             keys[pygame.K_q]
             or controls.get_button(BUTTON_TOOL_NEXT)
         ) and self.tool_switch_cooldown <= 0:
-            if self.inventory.get_selected_placeable() is not None:
-                self.inventory.selected_item_name = None
-            else:
-                self.switch_tool()
+            self.inventory.selected_item_name = None
+            self.cycle_selection_slot()
             self.tool_switch_cooldown = 0.2
 
         if (
             keys[pygame.K_e]
             or controls.get_button(BUTTON_SEED_NEXT)
-        ) and self.seed_switch_cooldown <= 0:
+        ) and self.seed_switch_cooldown <= 0 and self.mounted_vessel is None:
             self.switch_seed()
             self.seed_switch_cooldown = 0.2
 
         if (
             keys[pygame.K_SPACE]
-            or controls.get_button(BUTTON_TOOL)
+            or (
+                controller_tool_pressed
+                and not getattr(self, "_consume_button_lock", False)
+            )
         ) and self.tool_cooldown <= 0:
-            if self.inventory.get_selected_placeable() is not None:
+            if self.mounted_vessel is not None and self.selected_tool != "fishing rod":
+                action_kind = None
+            elif self.inventory.get_selected_placeable() is not None:
                 action_kind = self.use_selected_placeable()
             else:
                 action_kind = self.use_tool()
             if action_kind is not None:
+                self.spend_stamina(ACTION_STAMINA_COSTS.get(action_kind, 0.5))
                 self.action_kind = action_kind
                 self.action_timer = 0.55
                 self.action_lock_timer = 0.12
@@ -889,12 +1249,19 @@ class Player(AnimatedWorldObject):
             self.direction.update(0, 0)
             return
 
+        if self.mounted_vessel is not None:
+            # VesselManager reads the same movement controls and keeps the
+            # player's collision anchor attached to the boat.
+            self.direction.update(0, 0)
+            return
+
         if (
             keys[pygame.K_LCTRL]
             or keys[pygame.K_RCTRL]
             or controls.get_button(BUTTON_CANCEL)
         ) and self.seed_cooldown <= 0:
             if self.use_seed():
+                self.spend_stamina(ACTION_STAMINA_COSTS["plant"])
                 self.action_kind = "plant"
                 self.action_timer = 0.55
                 self.action_lock_timer = 0.12
@@ -923,10 +1290,21 @@ class Player(AnimatedWorldObject):
             self.direction = keyboard_direction.normalize()
         else:
             self.direction.update(0, 0)
+        if (
+            self.direction.length_squared() > 0
+            and (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT])
+            and (
+                not getattr(self, "stamina_enabled", False)
+                or self.game_state is None
+                or self.game_state.stamina > 0
+            )
+        ):
+            self.speed = self.base_speed * 1.45
+            self.is_sprinting = True
 
     def update_status(self):
         if not self.is_alive:
-            death_weapon = "spear" if self.selected_tool == "spear" else "sword"
+            death_weapon = "spear" if self.selected_weapon == "spear" else "sword"
             self.status = f"{self.facing}_dead_{death_weapon}"
             return
 
@@ -964,7 +1342,7 @@ class Player(AnimatedWorldObject):
         self.action_kind = None
 
         if self.direction.length_squared() == 0:
-            idle_action = "weapon_idle" if self.selected_tool in COMBAT_TOOLS else "idle"
+            idle_action = "weapon_idle" if getattr(self, "selected_selection_slot", "tool") == "weapon" else "idle"
             self.status = f"{self.facing}_{idle_action}"
             return
 
@@ -1046,7 +1424,11 @@ class Player(AnimatedWorldObject):
         self.refresh_animation_set()
         self.move(dt, collision_objects)
         self.animate(dt)
-        self.swim_visual.update(self, dt)
+        if getattr(self, "location_tools_enabled", True):
+            self.swim_visual.update(self, dt)
+        else:
+            self.swim_visual.sink_level = 0.0
+            self.swim_visual.target_sink_level = 0.0
         self.tick_opacity(dt)
     def add_coins(self, amount=1):
         amount = max(0, int(amount))

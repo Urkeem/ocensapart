@@ -21,6 +21,8 @@ FEATURED_NPC_ROLES = (
     "chef",
     "nun",
 )
+SCATTERED_NPC_CHUNK_CHANCE = 0.62
+MAX_SCATTERED_NPCS = 96
 
 
 def get_frame_mask(frame):
@@ -39,6 +41,8 @@ class WanderingNPC(AnimatedWorldObject):
         assets,
         pathfinder,
         npc_id=None,
+        story_id=None,
+        save_id=None,
         speed=72,
         visual_scale=2,
         rng=None,
@@ -47,6 +51,8 @@ class WanderingNPC(AnimatedWorldObject):
         self.pathfinder = pathfinder
         available_ids = assets.get_npc_ids()
         self.npc_id = npc_id or (available_ids[0] if available_ids else None)
+        self.story_id = story_id
+        self.save_id = save_id or (f"story:{story_id}" if story_id else None)
         self.role = (
             assets.get_npc_profile(self.npc_id)["role"]
             if self.npc_id is not None
@@ -76,6 +82,7 @@ class WanderingNPC(AnimatedWorldObject):
         self.is_enemy = False
         self.hostile = False
         self.faction = "civilian"
+        self.location_id = "player_farm"
 
         shared_frames = self.get_scaled_frames(self.status)
         super().__init__(
@@ -363,13 +370,30 @@ class WanderingNPC(AnimatedWorldObject):
         self.tick_opacity(dt)
 
 
+class StoryNPC(WanderingNPC):
+    """An authored character whose story identity is independent of its art."""
+
+    def __init__(self, *args, story_id, dialogue_name=None, **kwargs):
+        super().__init__(*args, story_id=story_id, **kwargs)
+        self.name = "story_npc"
+        self.dialogue_name = dialogue_name or story_id.replace("_", " ").title()
+        self.speed = 0
+        self.wait_timer = 999999
+
+    def update(self, dt):
+        self.direction.update(0, 0)
+        self.update_status()
+        self.animate(dt)
+        self.tick_opacity(dt)
+
+
 class GuardNPC(WanderingNPC):
     """Sword-and-shield guard composed from the dedicated NPC guard sheets."""
 
     AGGRO_RADIUS = 300
     ATTACK_RANGE = 76
 
-    def __init__(self, pos, assets, pathfinder, visual_scale=2, rng=None):
+    def __init__(self, pos, assets, pathfinder, visual_scale=2, rng=None, save_id=None):
         self.combat_action = None
         self.combat_action_timer = 0.0
         self.attack_cooldown = 0.0
@@ -379,6 +403,7 @@ class GuardNPC(WanderingNPC):
             assets,
             pathfinder,
             npc_id=None,
+            save_id=save_id,
             speed=78,
             visual_scale=visual_scale,
             rng=rng,
@@ -493,14 +518,126 @@ class GuardNPC(WanderingNPC):
 
 
 class NPCManager:
-    def __init__(self, world, assets, count=4):
+    def __init__(self, world, assets, count=4, game_state=None):
         self.world = world
         self.assets = assets
+        self.game_state = game_state
         self.pathfinder = ChunkPathfinder(world)
         self.npcs = []
         self.market_stall_ids = set()
+        self._staffed_chunk_coords = set()
+        self._scattered_chunk_coords = set()
+        self._scattered_npc_count = 0
         self.rng = random.Random(f"{world.seed}:npc-population")
         self.spawn_initial(count)
+        self.spawn_story_npcs()
+        self.spawn_scattered_npcs(max_chunks=None)
+
+    def spawn_story_npcs(self):
+        if self.game_state is None or self.game_state.flag("game.mode") != "story":
+            return ()
+
+        from data.content_manifest import STORY_NPCS
+        from data.story import STORY_NPC_PLACEMENTS
+
+        spawned = []
+
+        def visual_for(story_id, role):
+            visual_id = STORY_NPCS[story_id].visual_profile
+            if visual_id not in self.assets.get_npc_ids():
+                role_ids = self.assets.get_npc_ids(role)
+                visual_id = role_ids[0] if role_ids else (self.assets.get_npc_ids() or [None])[0]
+            return visual_id
+
+        def nearby_position(origin, offsets):
+            origin_tile = self.pathfinder.world_to_tile(origin)
+            for offset_x, offset_y in offsets:
+                tile = (origin_tile[0] + offset_x, origin_tile[1] + offset_y)
+                if self.pathfinder.is_walkable(tile):
+                    return self.pathfinder.tile_to_world_center(tile)
+            return origin
+
+        existing = {getattr(npc, "story_id", None) for npc in self.npcs}
+        farm_anchor = self.game_state.flag(
+            "player_farm.exterior_spawn", self.world.get_spawn_position()
+        )
+        for index, (story_id, placement) in enumerate(STORY_NPC_PLACEMENTS.items()):
+            if story_id in existing:
+                continue
+            state = self.game_state.story_npcs.setdefault(story_id, {})
+            visual_id = state.get("visual_id") or visual_for(story_id, "man")
+            location_id = state.get("location_id", placement["location_id"])
+            position = nearby_position(
+                farm_anchor,
+                ((2 + index % 4, 1 + index // 4), (-2 - index % 3, 2), (0, 3)),
+            )
+            actor = StoryNPC(
+                position,
+                self.assets,
+                self.pathfinder,
+                npc_id=visual_id,
+                story_id=story_id,
+                save_id=f"story:{story_id}",
+                dialogue_name=placement["name"],
+                rng=random.Random(f"{self.world.seed}:story:{story_id}"),
+            )
+            actor.location_id = location_id
+            actor.community_member = bool(state.get("community_member", False))
+            self.npcs.insert(index, actor)
+            state.setdefault("location_id", location_id)
+            state.setdefault("visual_id", visual_id)
+            existing.add(story_id)
+            spawned.append(actor)
+        spawned.extend(self.spawn_recruited_survivors())
+        return tuple(spawned)
+
+    def spawn_recruited_survivors(self):
+        """Materialize persisted rescue members for following and farm life."""
+        if self.game_state is None:
+            return ()
+        existing = {getattr(npc, "story_id", None) for npc in self.npcs}
+        candidates = (
+            self.assets.get_npc_ids("man")
+            + self.assets.get_npc_ids("woman")
+            + self.assets.get_npc_ids("old_man")
+        ) or self.assets.get_npc_ids()
+        farm_anchor = pygame.Vector2(
+            self.game_state.flag("player_farm.exterior_spawn", self.world.get_spawn_position())
+        )
+        offsets = ((2, 2), (-2, 2), (3, 1), (-3, 1), (1, 3), (-1, 3))
+        spawned = []
+        survivor_states = [
+            (npc_id, state)
+            for npc_id, state in sorted(self.game_state.story_npcs.items())
+            if state.get("community_member")
+            or state.get("rescue_stage") in {"following_hunter", "at_extraction", "settled_at_farm"}
+        ]
+        for index, (npc_id, state) in enumerate(survivor_states):
+            if npc_id in existing or not candidates:
+                continue
+            visual_id = state.get("visual_id") or candidates[index % len(candidates)]
+            offset = offsets[index % len(offsets)]
+            wanted = farm_anchor + pygame.Vector2(offset) * self.world.tile_size
+            tile = self.pathfinder.world_to_tile(wanted)
+            position = self.pathfinder.tile_to_world_center(tile) if self.pathfinder.is_walkable(tile) else farm_anchor
+            survivor = StoryNPC(
+                position,
+                self.assets,
+                self.pathfinder,
+                npc_id=visual_id,
+                story_id=npc_id,
+                save_id=f"story:{npc_id}",
+                dialogue_name="Rescued Survivor",
+                rng=random.Random(f"{self.world.seed}:story:{npc_id}"),
+            )
+            survivor.location_id = state.get("location_id", "player_farm")
+            survivor.community_member = bool(state.get("community_member"))
+            survivor.managed_by_survivor_transport = not survivor.community_member
+            self.npcs.append(survivor)
+            state["visual_id"] = visual_id
+            existing.add(npc_id)
+            spawned.append(survivor)
+        return tuple(spawned)
 
     def choose_npc_ids(self, count):
         selected = []
@@ -540,8 +677,9 @@ class NPCManager:
         candidates = []
 
         market_stalls = []
-        for chunk in self.world.loaded_chunks.values():
+        for chunk_coord, chunk in self.world.loaded_chunks.items():
             market_stalls.extend(ensure_chunk_market_stalls(chunk))
+            self._staffed_chunk_coords.add(chunk_coord)
 
         merchant_roles = ("merchant", "woman", "man", "old_woman", "old_man")
         merchant_ids = []
@@ -560,6 +698,8 @@ class NPCManager:
                     self.pathfinder,
                     stall=stall,
                     npc_id=npc_id,
+                    save_id=f"merchant:{stall.stall_id}",
+                    game_state=self.game_state,
                     rng=random.Random(f"{self.world.seed}:merchant:{stall.stall_id}"),
                 )
             )
@@ -598,6 +738,7 @@ class NPCManager:
                     self.pathfinder.tile_to_world_center(guard_tile),
                     self.assets,
                     self.pathfinder,
+                    save_id=f"npc:{self.world.seed}:guard:0",
                     rng=random.Random(f"{self.world.seed}:npc:guard"),
                 )
             )
@@ -630,6 +771,7 @@ class NPCManager:
                     self.assets,
                     self.pathfinder,
                     npc_id=npc_id,
+                    save_id=f"npc:{self.world.seed}:villager:{index}:{npc_id}",
                     home_pos=home_pos,
                     work_pos=work_pos,
                     social_pos=social_pos,
@@ -639,13 +781,122 @@ class NPCManager:
                 )
             )
 
+    def spawn_scattered_npcs(self, max_chunks=1):
+        """Populate newly streamed kingdom chunks without blocking one frame."""
+        if getattr(getattr(self.world, "island", None), "world_kind", "island") != "kingdom":
+            return 0
+        if self._scattered_npc_count >= MAX_SCATTERED_NPCS:
+            return 0
+
+        player_chunk = self.world.current_player_chunk or self.world.spawn_chunk
+        pending = sorted(
+            (
+                coord
+                for coord in self.world.loaded_chunks
+                if coord not in self._scattered_chunk_coords
+            ),
+            key=lambda coord: (
+                abs(coord[0] - player_chunk[0]) + abs(coord[1] - player_chunk[1]),
+                coord[1],
+                coord[0],
+            ),
+        )
+        if max_chunks is not None:
+            pending = pending[:max(0, int(max_chunks))]
+
+        npc_ids = self.assets.get_npc_ids()
+        if not npc_ids:
+            self._scattered_chunk_coords.update(pending)
+            return 0
+
+        spawned = 0
+        for chunk_coord in pending:
+            self._scattered_chunk_coords.add(chunk_coord)
+            rng = random.Random(
+                f"{self.world.seed}:scattered-npcs:{chunk_coord[0]}:{chunk_coord[1]}"
+            )
+            if rng.random() >= SCATTERED_NPC_CHUNK_CHANCE:
+                continue
+
+            chunk = self.world.loaded_chunks[chunk_coord]
+            local_tiles = [
+                (local_x, local_y)
+                for local_y in range(2, max(2, chunk.chunk_size[1] - 2))
+                for local_x in range(2, max(2, chunk.chunk_size[0] - 2))
+            ]
+            rng.shuffle(local_tiles)
+            walkable = []
+            for local_x, local_y in local_tiles[:96]:
+                world_tile = chunk.get_world_tile(local_x, local_y)
+                if self.pathfinder.is_walkable(world_tile):
+                    walkable.append(world_tile)
+                    if len(walkable) >= 2:
+                        break
+            if not walkable:
+                continue
+
+            wanted = 2 if rng.random() < 0.18 else 1
+            for index, tile in enumerate(walkable[:wanted]):
+                if self._scattered_npc_count >= MAX_SCATTERED_NPCS:
+                    return spawned
+                npc_id = rng.choice(npc_ids)
+                actor = WanderingNPC(
+                    self.pathfinder.tile_to_world_center(tile),
+                    self.assets,
+                    self.pathfinder,
+                    npc_id=npc_id,
+                    save_id=(
+                        f"npc:{self.world.seed}:scattered:"
+                        f"{chunk_coord[0]}:{chunk_coord[1]}:{index}:{npc_id}"
+                    ),
+                    rng=random.Random(
+                        f"{self.world.seed}:scattered-actor:"
+                        f"{chunk_coord[0]}:{chunk_coord[1]}:{index}"
+                    ),
+                )
+                actor.ambient_world_npc = True
+                actor.home_chunk = chunk_coord
+                self.npcs.append(actor)
+                self._scattered_npc_count += 1
+                spawned += 1
+        return spawned
+
     def update(self, dt, player=None, effects=None, game_time=None):
         from entities.scheduled_npc import ScheduledNPC
+        from data.locations import LOCATION_DEFINITIONS
 
         self.spawn_new_market_merchants()
+        self.spawn_scattered_npcs(max_chunks=1)
+        self.spawn_recruited_survivors()
+        if self.game_state is not None:
+            for npc in self.npcs:
+                story_id = getattr(npc, "story_id", None)
+                if story_id and story_id in self.game_state.story_npcs:
+                    state = self.game_state.story_npcs[story_id]
+                    npc.location_id = state.get("location_id", npc.location_id)
+                    npc.community_member = bool(state.get("community_member", False))
         for npc in self.npcs:
+            if getattr(npc, "managed_by_encounter", False) or getattr(npc, "managed_by_survivor_transport", False):
+                continue
+            player_location = getattr(getattr(player, "game_state", None), "current_location_id", None)
+            npc_location = getattr(npc, "location_id", "player_farm")
+            runtime = LOCATION_DEFINITIONS.get(npc_location, {}).get("runtime", "world")
+            if runtime == "world":
+                if (
+                    self.world.active_chunks
+                    and self.world.world_to_chunk(npc.rect.center) not in self.world.active_chunks
+                ):
+                    continue
+            elif player_location is not None and npc_location != player_location:
+                continue
+            npc_player = (
+                player
+                if player_location is None
+                or npc_location == player_location
+                else None
+            )
             if isinstance(npc, GuardNPC):
-                npc.update(dt, player=player, effects=effects)
+                npc.update(dt, player=npc_player, effects=effects)
             elif isinstance(npc, ScheduledNPC):
                 npc.update(dt, game_time=game_time)
             else:
@@ -665,7 +916,9 @@ class NPCManager:
             return 0
 
         spawned = []
-        for chunk in self.world.loaded_chunks.values():
+        for chunk_coord, chunk in self.world.loaded_chunks.items():
+            if chunk_coord in self._staffed_chunk_coords:
+                continue
             for stall in ensure_chunk_market_stalls(chunk):
                 if stall.stall_id in self.market_stall_ids:
                     continue
@@ -676,11 +929,14 @@ class NPCManager:
                     self.pathfinder,
                     stall=stall,
                     npc_id=npc_id,
+                    save_id=f"merchant:{stall.stall_id}",
+                    game_state=self.game_state,
                     rng=random.Random(f"{self.world.seed}:merchant:{stall.stall_id}"),
                 )
                 self.npcs.append(merchant)
                 self.market_stall_ids.add(stall.stall_id)
                 spawned.append(merchant)
+            self._staffed_chunk_coords.add(chunk_coord)
 
         if spawned:
             social_points = [pygame.Vector2(npc.stall.record["visitor_world_pos"]) for npc in self.npcs if isinstance(npc, MerchantNPC)]
@@ -710,8 +966,33 @@ class NPCManager:
             key=lambda npc: player_center.distance_squared_to(npc.rect.midbottom),
         )
 
+    def find_interaction_target(self, player, max_distance=112):
+        """Return the closest eligible NPC for the shared interaction action."""
+        player_center = pygame.Vector2(player.feet_collision_box.center)
+        nearby = []
+        for npc in self.npcs:
+            if not getattr(npc, "is_alive", True):
+                continue
+            if getattr(npc, "is_merchant", False) and not npc.is_available:
+                continue
+            distance = player_center.distance_to(npc.rect.midbottom)
+            if distance <= max_distance:
+                nearby.append((npc, distance))
+        if not nearby:
+            return None
+        # Authored speakers win a close tie so ambient villagers cannot cover them.
+        return min(
+            nearby,
+            key=lambda item: (item[1] - (12 if getattr(item[0], "story_id", None) else 0)),
+        )[0]
+
     def visible_npcs(self, visible_chunks):
+        from data.locations import LOCATION_DEFINITIONS
+
         visible_chunk_keys = {coord for coord, _, _, _ in visible_chunks}
         for npc in self.npcs:
+            location_id = getattr(npc, "location_id", "player_farm")
+            if LOCATION_DEFINITIONS.get(location_id, {}).get("runtime", "world") != "world":
+                continue
             if self.world.world_to_chunk(npc.rect.center) in visible_chunk_keys:
                 yield npc

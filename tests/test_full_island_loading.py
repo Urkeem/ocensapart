@@ -74,6 +74,36 @@ class FullIslandLoadingTests(unittest.TestCase):
         get_surface.assert_called_once_with(world, chunk)
         collect_objects.assert_called_once_with(chunk, soil_layer)
 
+    def test_streaming_limits_active_and_prefetched_chunks(self):
+        world = World(seed=31, chunk_size=(1, 1), active_radius=1, tile_size=1)
+
+        world.queue_chunks_around((0, 0), movement_direction=(1, 0))
+
+        self.assertEqual(world.active_chunks, world.get_chunks_near((0, 0), 1))
+        self.assertEqual(world.target_loaded_chunks, world.get_chunks_near((0, 0), 2))
+        self.assertEqual(set(world.chunk_load_queue), world.target_loaded_chunks)
+        self.assertLess(
+            list(world.chunk_load_queue).index((1, 0)),
+            list(world.chunk_load_queue).index((-1, 0)),
+        )
+
+    def test_loaded_landing_chunks_prewarm_incrementally(self):
+        world, _, fake_load = self.make_world_with_fake_generation()
+        landing_chunks = {(0, 0), (1, 0)}
+        world.queue_chunks_around((0, 0))
+
+        with patch.object(world, "load_chunk", side_effect=fake_load):
+            world.prepare_loaded_chunks_incrementally(landing_chunks)
+
+        prepared = []
+        while not world.is_streaming_area_ready(landing_chunks):
+            world.process_chunk_streaming(
+                prewarm_chunk_callback=lambda chunk: prepared.append(chunk.coord) or True,
+            )
+
+        self.assertEqual(set(prepared), landing_chunks)
+        self.assertEqual(world.get_streaming_progress(landing_chunks), (2, 2))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -13,16 +13,23 @@ from entities.house import House, get_house_asset_names, get_house_image
 from entities.market import ensure_chunk_market_stalls
 from entities.tree import Tree, prewarm_tree_visual_cache
 from inventory_item import Item
+from data.content_manifest import ORE_ASSETS, ROCK_ASSETS
 from world.soil import ensure_chunk_plant_objects
 from world.fence import ensure_chunk_fence_collisions
 from world.water import WaterTile
 
 from gameplay.assets import get_water_frames
 from gameplay.terrain import (
+    get_biome_surface,
     get_chunk_surface,
+    get_deep_ocean_surface,
+    get_dock_surface,
+    get_fence_surface,
+    get_path_surface,
     is_deep_water_tile,
     preload_world_render_assets,
 )
+from world.soil import get_soil_surface
 
 
 _UPDATE_ACCEPTS_CHUNK_CONTEXT = {}
@@ -59,8 +66,6 @@ def prewarm_runtime_asset_caches():
     environment_folders = (
         ("shells",),
         ("flowers",),
-        ("rocks", "small"),
-        ("rocks", "big"),
         ("thickets", "weeds"),
         ("thickets", "bushes", "small"),
         ("thickets", "bushes", "big"),
@@ -73,6 +78,14 @@ def prewarm_runtime_asset_caches():
     for folder in environment_folders:
         for asset_path in list_environment_assets(*folder):
             get_environment_image(asset_path)
+    for rock in ROCK_ASSETS.values():
+        for asset_path in rock.assets:
+            get_environment_image(asset_path)
+        get_environment_image(rock.drop_asset)
+    for ore in ORE_ASSETS.values():
+        get_environment_image(
+            ore.path.removeprefix("graphics/sprites/environment/")
+        )
 
 REMOVAL_PICKUP_DROPS = {
     "bush": ("weed", 2),
@@ -84,6 +97,12 @@ PICKUP_EFFECTS = {
     "flower": "petal",
     "shell": "shell",
     "rock_piece": "rock",
+    "coal_ore": "rock",
+    "iron_ore": "rock",
+    "gold_ore": "gem",
+    "diamond_ore": "gem",
+    "ruby_ore": "gem",
+    "blue_sapphire_ore": "gem",
 }
 
 
@@ -554,6 +573,43 @@ def prewarm_chunk_runtime(chunk, world=None, soil_layer=None):
     collect_chunk_objects(chunk, soil_layer)
 
 
+def prewarm_chunk_runtime_step(chunk, world=None, soil_layer=None):
+    """Advance one main-thread-safe chunk prewarm phase."""
+    phase = int(chunk.runtime.get("prewarm_phase", 0))
+    if phase >= 8:
+        return True
+    if phase == 0:
+        ensure_chunk_tree_objects(chunk)
+    elif phase == 1:
+        ensure_chunk_house_objects(chunk)
+        ensure_chunk_market_stalls(chunk)
+        ensure_chunk_animal_objects(chunk)
+    elif phase == 2:
+        ensure_chunk_environment_objects(chunk)
+    elif phase == 3:
+        ensure_chunk_water_objects(chunk)
+    elif phase == 4 and world is not None:
+        get_deep_ocean_surface(world, chunk)
+    elif phase == 5 and world is not None:
+        get_biome_surface(world, chunk)
+    elif phase == 6 and world is not None:
+        get_path_surface(world, chunk)
+        get_soil_surface(world, chunk)
+        get_dock_surface(chunk)
+        get_fence_surface(world, chunk)
+    elif phase == 7:
+        if world is not None:
+            if chunk.runtime.pop("surface_stale", False):
+                chunk.runtime["surface"] = None
+                chunk.runtime.pop("camera_scaled_surface", None)
+            get_chunk_surface(world, chunk)
+        collect_chunk_objects(chunk, soil_layer)
+
+    phase += 1
+    chunk.runtime["prewarm_phase"] = phase
+    return phase >= 8
+
+
 def update_world_objects(visible_chunks, player, dt, soil_layer=None, objects_by_chunk=None):
     # Update object in every chunk.
     near_chunks = {coord for coord, _, _, _ in visible_chunks}
@@ -579,16 +635,21 @@ def collect_y_sorted_objects(
     soil_layer=None,
     npc_manager=None,
     objects_by_chunk=None,
+    extra_objects=(),
 ):
     # Renderable actors from multiple chunks share one sort list so depth order
     # remains correct at chunk borders.
-    objects = [player]
+    objects = [] if getattr(player, "hidden_by_vessel", False) else [player]
     seen = {id(player)}
     if npc_manager is not None:
         for npc in npc_manager.visible_npcs(visible_chunks):
             if id(npc) not in seen:
                 seen.add(id(npc))
                 objects.append(npc)
+    for obj in extra_objects or ():
+        if id(obj) not in seen:
+            seen.add(id(obj))
+            objects.append(obj)
     for chunk_coord, chunk, _, _ in visible_chunks:
         chunk_objects = (
             objects_by_chunk[chunk_coord]
@@ -665,8 +726,12 @@ def collect_pickups_near_player(world, player):
                 pickup_pos = prop.rect.center
                 if prop.pickup(player):
                     effect_name = PICKUP_EFFECTS.get(pickup_name) or PICKUP_EFFECTS.get(prop.prop_type)
-                    if effect_name is not None and hasattr(player, "emit_effect"):
+                    effect_manager = getattr(player, "effect_manager", None)
+                    if prop.prop_type == "rock_piece" and effect_manager is not None:
+                        effect_manager.burst(effect_name or "rock", pickup_pos, count=5, speed=(24, 58))
+                    elif effect_name is not None and hasattr(player, "emit_effect"):
                         player.emit_effect(effect_name, pickup_pos)
+                    chunk.save_data["removed_props"].add(prop.prop_id)
                     chunk.mark_dirty()
                     return True
         for tree in ensure_chunk_tree_objects(chunk):
@@ -687,7 +752,10 @@ def spawn_rock_piece_drops(chunk, rock, amount):
     if amount <= 0:
         return
 
-    assets = list_environment_assets("rocks", "small") or ["rocks/small/r1.png"]
+    drop_asset = rock.record.get(
+        "drop_asset",
+        ROCK_ASSETS["land_rock"].drop_asset,
+    )
     world_tile = rock.record.get("world_tile", (0, 0))
     rng = random.Random(f"{rock.prop_id}:drops")
     offsets = [(-0.24, -0.10), (0.18, -0.04), (0.0, 0.20), (-0.04, -0.26)]
@@ -705,7 +773,7 @@ def spawn_rock_piece_drops(chunk, rock, amount):
             "id": drop_id,
             "prop_type": "rock_piece",
             "variant": "piece",
-            "asset": rng.choice(assets),
+            "asset": drop_asset,
             "chunk": chunk.coord,
             "local_tile": (local_x, local_y),
             "world_tile": world_tile,

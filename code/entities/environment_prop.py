@@ -17,12 +17,19 @@ from utils import rp
 _ENV_IMAGE_CACHE: dict[tuple[str, float], pygame.Surface] = {}
 _ENV_SHEET_CACHE: dict[str, pygame.Surface] = {}
 PICKUP_PROP_TYPES = frozenset(
-    {"shell", "rock_piece", "hay", "flower", "pot", "coin", "gem"}
+    {"shell", "rock_piece", "hay", "flower", "pot", "coin", "gem", "ore"}
 )
 BREAKABLE_PROP_TYPES = frozenset({"crate", "barrel"})
 
 ASSET_PATH_ALIASES = {
     "props/general/buckets.png": "props/buckets/buckets.png#0",
+    # Save compatibility for worlds generated before the beach-rock move.
+    "rocks/small/r1.png": "rocks/beach_rocks/small/r1.png",
+    "rocks/small/r2.png": "rocks/beach_rocks/small/r2.png",
+    "rocks/small/r3.png": "rocks/beach_rocks/small/r3.png",
+    "rocks/big/r1.png": "rocks/beach_rocks/big/r1.png",
+    "rocks/big/r2.png": "rocks/beach_rocks/big/r2.png",
+    "rocks/big/r3.png": "rocks/beach_rocks/big/r3.png",
 }
 
 PROP_SHEET_FRAMES = {
@@ -264,7 +271,12 @@ class EnvironmentProp(WorldObject):
             return {"broken": False, "drops": 0}
 
         if self.prop_type == "rock":
-            amount = 3 if self.variant == "big" else 1
+            amount = int(
+                self.record.get(
+                    "drop_count",
+                    3 if self.variant in {"big", "land_rock"} else 1,
+                )
+            )
             drops = amount
         else:
             rng = random.Random(f"{self.prop_id}:drops")

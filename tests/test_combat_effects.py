@@ -143,6 +143,30 @@ class CombatEffectsTests(unittest.TestCase):
 
         self.assertEqual(player.status, "down_weapon_idle")
 
+    def test_weapon_layer_and_idle_animation_only_show_for_weapon_slot(self):
+        player = self.make_player()
+        player.direction.update(0, 0)
+
+        self.assertEqual(player.selected_selection_slot, "tool")
+        self.assertIsNone(player.customization["weapon"])
+        self.assertIsNone(player.customization["offhand"])
+        self.assertFalse(player.has_equipped_weapon(player.selected_weapon))
+        player.update_status()
+        self.assertEqual(player.status, "down_idle")
+
+        self.assertEqual(player.cycle_selection_slot(), "weapon")
+        self.assertEqual(player.customization["weapon"], player.selected_weapon)
+        self.assertTrue(player.has_equipped_weapon(player.selected_weapon))
+        player.update_status()
+        self.assertEqual(player.status, "down_weapon_idle")
+
+        self.assertEqual(player.cycle_selection_slot(), "seed")
+        self.assertIsNone(player.customization["weapon"])
+        self.assertIsNone(player.customization["offhand"])
+        self.assertFalse(player.has_equipped_weapon(player.selected_weapon))
+        player.update_status()
+        self.assertEqual(player.status, "down_idle")
+
     def test_player_death_is_one_shot_then_can_revive(self):
         player = self.make_player()
         source = type(
